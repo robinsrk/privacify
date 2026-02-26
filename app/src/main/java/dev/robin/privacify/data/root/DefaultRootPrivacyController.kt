@@ -46,45 +46,53 @@ class DefaultRootPrivacyController : RootPrivacyController {
 
 	override suspend fun setMicDisabled(disabled: Boolean) {
 		withContext(Dispatchers.IO) {
-			val state = if (disabled) "true" else "false"
-			val appOpsMode = if (disabled) "ignore" else "allow"
+			val state = if (disabled) "1" else "0"
 			
-			// 1. Android 12+ Global Toggle
-			executeRootCommand("cmd sensor_privacy set-state 0 microphone $state")
+			// Optimistically update UI
+			mutableMicDisabled.value = disabled
+			
+			// 1. Android 12+ Global Toggle using service call
+			executeRootCommand("service call sensor_privacy 10 i32 0 i32 0 i32 1 i32 $state")
 
 			// 2. Comprehensive AppOps (User + System + Phone)
-			val ops = listOf("RECORD_AUDIO", "PHONE_CALL_MICROPHONE", "RECEIVE_AMBIENT_TRIGGER_AUDIO")
-			val cmdBuilder = StringBuilder()
-			cmdBuilder.append("pm list packages | cut -d: -f2 | while read pkg; do ")
-			for (op in ops) {
-				cmdBuilder.append("appops set \"\$pkg\" $op $appOpsMode; ")
+			scope.launch(Dispatchers.IO) {
+				val appOpsMode = if (disabled) "ignore" else "allow"
+				val ops = listOf("RECORD_AUDIO", "PHONE_CALL_MICROPHONE", "RECEIVE_AMBIENT_TRIGGER_AUDIO")
+				val cmdBuilder = StringBuilder()
+				cmdBuilder.append("pm list packages | cut -d: -f2 | while read pkg; do ")
+				for (op in ops) {
+					cmdBuilder.append("appops set \"\$pkg\" $op $appOpsMode; ")
+				}
+				cmdBuilder.append("done")
+				
+				executeRootCommand(cmdBuilder.toString())
 			}
-			cmdBuilder.append("done")
-			
-			executeRootCommand(cmdBuilder.toString())
-			mutableMicDisabled.value = disabled
 		}
 	}
 
 	override suspend fun setCameraDisabled(disabled: Boolean) {
 		withContext(Dispatchers.IO) {
-			val state = if (disabled) "true" else "false"
-			val appOpsMode = if (disabled) "ignore" else "allow"
+			val state = if (disabled) "1" else "0"
 			
-			// 1. Android 12+ Global Toggle
-			executeRootCommand("cmd sensor_privacy set-state 0 camera $state")
+			// Optimistically update UI
+			mutableCameraDisabled.value = disabled
+			
+			// 1. Android 12+ Global Toggle using service call
+			executeRootCommand("service call sensor_privacy 10 i32 0 i32 0 i32 2 i32 $state")
 
 			// 2. Comprehensive AppOps (User + System + Phone)
-			val ops = listOf("CAMERA", "PHONE_CALL_CAMERA")
-			val cmdBuilder = StringBuilder()
-			cmdBuilder.append("pm list packages | cut -d: -f2 | while read pkg; do ")
-			for (op in ops) {
-				cmdBuilder.append("appops set \"\$pkg\" $op $appOpsMode; ")
+			scope.launch(Dispatchers.IO) {
+				val appOpsMode = if (disabled) "ignore" else "allow"
+				val ops = listOf("CAMERA", "PHONE_CALL_CAMERA")
+				val cmdBuilder = StringBuilder()
+				cmdBuilder.append("pm list packages | cut -d: -f2 | while read pkg; do ")
+				for (op in ops) {
+					cmdBuilder.append("appops set \"\$pkg\" $op $appOpsMode; ")
+				}
+				cmdBuilder.append("done")
+				
+				executeRootCommand(cmdBuilder.toString())
 			}
-			cmdBuilder.append("done")
-			
-			executeRootCommand(cmdBuilder.toString())
-			mutableCameraDisabled.value = disabled
 		}
 	}
 
