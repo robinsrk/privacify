@@ -1,0 +1,1 @@
+Initial release of Privacify with core privacy features and root controls.

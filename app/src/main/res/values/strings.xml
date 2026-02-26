@@ -1,0 +1,7 @@
+<resources>
+	<string name="app_name">Privacify</string>
+	<string name="nav_home">Home</string>
+	<string name="nav_apps">Apps</string>
+	<string name="nav_analytics">Analytics</string>
+	<string name="nav_settings">Settings</string>
+</resources>
