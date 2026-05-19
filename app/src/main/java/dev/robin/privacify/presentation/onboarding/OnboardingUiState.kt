@@ -5,6 +5,7 @@ import dev.robin.privacify.domain.onboarding.OnboardingStep
 data class OnboardingUiState(
 	val step: OnboardingStep = OnboardingStep.Welcome,
 	val isRootAvailable: Boolean = false,
+	val isRootGranted: Boolean = false,
 	val usageAccessGranted: Boolean = false,
 	val notificationPermissionGranted: Boolean = false,
 	val isLoading: Boolean = false,

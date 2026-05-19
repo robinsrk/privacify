@@ -14,6 +14,7 @@ import dev.robin.privacify.data.onboarding.DatastoreOnboardingRepository
 import dev.robin.privacify.domain.onboarding.OnboardingRepository
 import dev.robin.privacify.domain.onboarding.OnboardingStep
 import dev.robin.privacify.domain.root.RootManager
+import dev.robin.privacify.pro.utils.ShellUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,8 +35,16 @@ class OnboardingViewModel(
 	init {
 		rootJob = viewModelScope.launch {
 			rootManager.rootStatus.collectLatest { rooted ->
+				val shizukuGranted = try {
+					ShellUtils.isShizukuGranted()
+				} catch (e: Exception) {
+					false
+				}
 				mutableState.update { current ->
-					current.copy(isRootAvailable = rooted)
+					current.copy(
+						isRootAvailable = rooted,
+						isRootGranted = shizukuGranted
+					)
 				}
 			}
 		}
@@ -72,10 +81,17 @@ class OnboardingViewModel(
 			true
 		}
 
+		val shizukuGranted = try {
+			ShellUtils.isShizukuGranted()
+		} catch (e: Exception) {
+			false
+		}
+
 		mutableState.update { current ->
 			current.copy(
 				usageAccessGranted = usageGranted,
-				notificationPermissionGranted = notificationGranted
+				notificationPermissionGranted = notificationGranted,
+				isRootGranted = shizukuGranted
 			)
 		}
 	}

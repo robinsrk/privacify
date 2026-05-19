@@ -15,8 +15,14 @@ class UserPreferencesManager(context: Context) {
     private val _notificationsEnabled = MutableStateFlow(prefs.getBoolean("notifications_enabled", true))
     val notificationsEnabled: StateFlow<Boolean> = _notificationsEnabled
 
+    private val _automationEnabled = MutableStateFlow(prefs.getBoolean("automation_enabled", false))
+    val automationEnabled: StateFlow<Boolean> = _automationEnabled
+
     private val _scanFrequency = MutableStateFlow(prefs.getString("scan_frequency", "Daily") ?: "Daily")
     val scanFrequency: StateFlow<String> = _scanFrequency
+
+    private val _shellType = MutableStateFlow(prefs.getString("shell_type", "auto") ?: "auto")
+    val shellType: StateFlow<String> = _shellType
 
     fun setTheme(mode: AppThemeMode) {
         _themeMode.value = mode
@@ -37,9 +43,19 @@ class UserPreferencesManager(context: Context) {
         prefs.edit().putBoolean("notifications_enabled", enabled).apply()
     }
 
+    fun setAutomationEnabled(enabled: Boolean) {
+        _automationEnabled.value = enabled
+        prefs.edit().putBoolean("automation_enabled", enabled).apply()
+    }
+
     fun setScanFrequency(frequency: String) {
         _scanFrequency.value = frequency
         prefs.edit().putString("scan_frequency", frequency).apply()
+    }
+
+    fun setShellType(type: String) {
+        _shellType.value = type
+        prefs.edit().putString("shell_type", type).apply()
     }
 
     private fun loadTheme(): AppThemeMode {

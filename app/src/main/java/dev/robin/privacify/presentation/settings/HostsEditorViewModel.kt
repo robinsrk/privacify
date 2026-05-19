@@ -32,7 +32,16 @@ class HostsEditorViewModel : ViewModel() {
 	private fun loadHosts() {
 		viewModelScope.launch(Dispatchers.IO) {
 			val content = HostsFileManager.readHosts()
-			_state.update { it.copy(content = content, isLoading = false) }
+			if (content.contains("requires Pro")) {
+				_state.update {
+					it.copy(
+						content = "# Pro Version Required\n# Hosts file editing requires the Pro version.\n# Please upgrade to edit system hosts file.",
+						isLoading = false
+					)
+				}
+			} else {
+				_state.update { it.copy(content = content, isLoading = false) }
+			}
 		}
 	}
 

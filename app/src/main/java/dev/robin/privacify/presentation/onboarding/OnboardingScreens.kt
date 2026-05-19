@@ -467,15 +467,19 @@ private fun OnboardingSystemCheckScreen(
 				// Root Access (Conditional)
 				if (state.isRootAvailable) {
 					PermissionCard(
-						title = "Root Access",
-						description = "Optional. Enables deep system cleaning and kernel-level ad blocking.",
+						title = "Root/Shizuku Access",
+						description = "Optional. Enables deep system control and tracker blocking.",
 						icon = androidx.compose.material.icons.Icons.Rounded.AdminPanelSettings,
-						isGranted = false, // TODO: Check actual root grant status if possible, or leave as unchecked
+						isGranted = state.isRootGranted,
 						isAdvanced = true,
 						onClick = {
-							// Trigger root request or show info
-							// For now, just a placeholder action or maybe toast "Grant in Magisk"
-							android.widget.Toast.makeText(context, "Please grant Root access in Magisk", android.widget.Toast.LENGTH_SHORT).show()
+							if (!state.isRootGranted) {
+								android.widget.Toast.makeText(
+									context,
+									"Open Shizuku app to grant permission",
+									android.widget.Toast.LENGTH_SHORT
+								).show()
+							}
 						}
 					)
 				}

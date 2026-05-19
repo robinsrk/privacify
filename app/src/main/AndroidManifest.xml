@@ -10,6 +10,12 @@
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+	<uses-permission android:name="android.permission.CAMERA" />
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+	<uses-permission android:name="rikka.shizuku.permission.V3" />
+	<uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL"
+		tools:ignore="ProtectedPermissions" />
 
 	<application
 		android:name=".PrivacifyApplication"
@@ -21,16 +27,14 @@
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
 		android:theme="@style/Theme.Privacify">
-		
-		<service
-			android:name=".data.firewall.PrivacifyVpnService"
-			android:permission="android.permission.BIND_VPN_SERVICE"
-			android:exported="false"
-			android:foregroundServiceType="specialUse">
-			<intent-filter>
-				<action android:name="android.net.VpnService" />
-			</intent-filter>
-		</service>
+
+		<provider
+			android:name="rikka.shizuku.ShizukuProvider"
+			android:authorities="${applicationId}.shizuku"
+			android:multiprocess="false"
+			android:enabled="true"
+			android:exported="true"
+			android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
 		<activity
 			android:name=".MainActivity"
@@ -43,6 +47,16 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<service
+			android:name="dev.robin.privacify.pro.root.AutomationService"
+			android:enabled="true"
+			android:exported="false"
+			android:foregroundServiceType="specialUse">
+			<property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+				android:value="Privacy monitoring and root-level hardware control automation" />
+		</service>
+
 	</application>
 
 </manifest>

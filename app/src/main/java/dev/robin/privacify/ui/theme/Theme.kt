@@ -15,11 +15,18 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-	primary = BluePrimary,
+	primary = TealPrimary,
 	onPrimary = Color.White,
-	secondary = BlueLight,
-	onSecondary = Color(0xFF001E38),
-	tertiary = Purple500,
+	primaryContainer = TealDark,
+	onPrimaryContainer = TealLight,
+	secondary = VioletPrimary,
+	onSecondary = Color.White,
+	secondaryContainer = VioletDark,
+	onSecondaryContainer = VioletLight,
+	tertiary = BluePrimary,
+	onTertiary = Color.White,
+	tertiaryContainer = BlueDark,
+	onTertiaryContainer = BlueLight,
 	background = DarkBackground,
 	onBackground = DarkOnBackground,
 	surface = DarkSurface,
@@ -29,15 +36,24 @@ private val DarkColorScheme = darkColorScheme(
 	outline = DarkOutline,
 	outlineVariant = DarkOutline,
 	error = Red500,
-	onError = Color.White
+	onError = Color.White,
+	errorContainer = Color(0xFF93000A),
+	onErrorContainer = Color(0xFFFFDAD6)
 )
 
 private val LightColorScheme = lightColorScheme(
-	primary = BluePrimary,
+	primary = TealPrimary,
 	onPrimary = Color.White,
-	secondary = BlueDark,
+	primaryContainer = TealLight,
+	onPrimaryContainer = Color(0xFF002019),
+	secondary = VioletPrimary,
 	onSecondary = Color.White,
-	tertiary = Purple500,
+	secondaryContainer = VioletLight,
+	onSecondaryContainer = Color(0xFF21005D),
+	tertiary = BluePrimary,
+	onTertiary = Color.White,
+	tertiaryContainer = BlueLight,
+	onTertiaryContainer = Color(0xFF001E38),
 	background = LightBackground,
 	onBackground = LightOnBackground,
 	surface = LightSurface,
@@ -47,13 +63,15 @@ private val LightColorScheme = lightColorScheme(
 	outline = LightOutline,
 	outlineVariant = LightOutline,
 	error = Red500,
-	onError = Color.White
+	onError = Color.White,
+	errorContainer = Color(0xFFFFDAD6),
+	onErrorContainer = Color(0xFF410002)
 )
 
 @Composable
 fun PrivacifyTheme(
 	darkTheme: Boolean = isSystemInDarkTheme(),
-	dynamicColor: Boolean = false,
+	dynamicColor: Boolean = true,
 	content: @Composable () -> Unit
 ) {
 	val colorScheme = when {
@@ -61,7 +79,6 @@ fun PrivacifyTheme(
 			val context = LocalContext.current
 			if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 		}
-
 		darkTheme -> DarkColorScheme
 		else -> LightColorScheme
 	}

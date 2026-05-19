@@ -13,6 +13,7 @@ import dev.robin.privacify.domain.firewall.FirewallManager
 import dev.robin.privacify.domain.lockdown.LockdownUseCase
 import dev.robin.privacify.domain.root.RootManager
 import dev.robin.privacify.domain.root.RootPrivacyController
+import dev.robin.privacify.pro.utils.ShellUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -37,8 +38,22 @@ class DashboardViewModel(
 
 	init {
 		ioScope.launch {
-			rootManager.rootStatus.collectLatest { rooted ->
-				mutableState.update { it.copy(isRooted = rooted) }
+			updateShellAccessStatus(ShellUtils.shellTypePreference)
+		}
+		ioScope.launch {
+			for (i in 0..9) {
+				kotlinx.coroutines.delay(200)
+				val currentShellType = ShellUtils.shellTypePreference
+				if (currentShellType != mutableState.value.shellType) {
+					updateShellAccessStatus(currentShellType)
+				}
+			}
+			while (true) {
+				kotlinx.coroutines.delay(2000)
+				val currentShellType = ShellUtils.shellTypePreference
+				if (currentShellType != mutableState.value.shellType) {
+					updateShellAccessStatus(currentShellType)
+				}
 			}
 		}
 		ioScope.launch {
@@ -108,22 +123,62 @@ class DashboardViewModel(
 		}
 	}
 
+	private fun hasShellAccess(): Boolean {
+		return mutableState.value.isRooted
+	}
+
+	private fun updateShellAccessStatus(shellType: String) {
+		val hasShellAccess = when (shellType) {
+			"shizuku" -> {
+				try {
+					val available = ShellUtils.isShizukuAvailable()
+					val granted = ShellUtils.isShizukuGranted()
+					android.util.Log.d("DashboardViewModel", "Shizuku check: available=$available, granted=$granted")
+					available && granted
+				} catch (e: Exception) {
+					android.util.Log.d("DashboardViewModel", "Shizuku check failed: ${e.message}")
+					false
+				}
+			}
+			"root" -> {
+				try {
+					ShellUtils.isRootAvailable()
+				} catch (e: Exception) {
+					false
+				}
+			}
+			else -> {
+				try {
+					ShellUtils.isShizukuAvailable() && ShellUtils.isShizukuGranted()
+				} catch (e: Exception) {
+					false
+				} || try {
+					ShellUtils.isRootAvailable()
+				} catch (e: Exception) {
+					false
+				}
+			}
+		}
+		android.util.Log.d("DashboardViewModel", "Shell type: $shellType, hasShellAccess: $hasShellAccess")
+		mutableState.update { it.copy(isRooted = hasShellAccess, shellType = shellType) }
+	}
+
 	private fun toggleMic() {
-		if (!mutableState.value.isRooted) return
+		if (!hasShellAccess()) return
 		ioScope.launch {
 			rootPrivacyController.setMicDisabled(!rootPrivacyController.micDisabled.value)
 		}
 	}
 
 	private fun toggleCamera() {
-		if (!mutableState.value.isRooted) return
+		if (!hasShellAccess()) return
 		ioScope.launch {
 			rootPrivacyController.setCameraDisabled(!rootPrivacyController.cameraDisabled.value)
 		}
 	}
 
 	private fun toggleLockdown() {
-		if (!mutableState.value.isRooted) return
+		if (!hasShellAccess()) return
 		ioScope.launch {
 			if (state.value.lockdownEnabled) {
 				lockdownUseCase.disableLockdown()

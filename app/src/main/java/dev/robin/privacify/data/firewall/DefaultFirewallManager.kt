@@ -17,16 +17,16 @@ class DefaultFirewallManager : FirewallManager {
 	private val _systemBlocking = MutableStateFlow(false)
 	override val systemBlocking: StateFlow<Boolean> = _systemBlocking
 
-	private val context = dev.robin.privacify.core.utils.AppContextProvider.context
+	// VPN integration removed for now; no external service is started
 
 	override suspend fun enable() {
 		_enabled.value = true
-		startVpn()
+		// VPN orchestration removed
 	}
 
 	override suspend fun disable() {
 		_enabled.value = false
-		stopVpn()
+		// VPN orchestration removed
 	}
 
 	override suspend fun blockApp(packageName: String) {
@@ -49,19 +49,7 @@ class DefaultFirewallManager : FirewallManager {
 		if (_enabled.value) startVpn()
 	}
 
-	private fun startVpn() {
-		val intent = android.content.Intent(context, PrivacifyVpnService::class.java)
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-			context.startForegroundService(intent)
-		} else {
-			context.startService(intent)
-		}
-	}
+	private fun startVpn() { /* removed VPN orchestration */ }
 
-	private fun stopVpn() {
-		val intent = android.content.Intent(context, PrivacifyVpnService::class.java).apply {
-			action = PrivacifyVpnService.ACTION_STOP
-		}
-		context.startService(intent)
-	}
+	private fun stopVpn() { /* removed VPN orchestration */ }
 }
