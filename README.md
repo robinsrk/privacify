@@ -1,66 +1,39 @@
-# 🛡️ Privacify Free
+# Privacify
 
-**Privacy Control Center** - Take control of your digital privacy on Android
-
-*<p align="center">Empowering users with hybrid privacy tools for rooted and non-rooted devices</p>*
+Privacy Control Center — monitor and manage app permissions, track sensor usage, and secure your device.
 
 <div align="center">
 
-[![Get it on Google Play](https://img.shields.io/badge/Get%20it%20on-Google%20Play-blue?style=for-the-badge&logo=google-play)](https://play.google.com/store/apps/details?id=com.privacify.free)
-[![Get it on F-Droid](https://img.shields.io/badge/Get%20it%20on-F--Droid-green?style=for-the-badge&logo=f-droid)](https://f-droid.org/packages/com.privacify.free/)
-
-<img src="https://via.placeholder.com/300x600/4A90E2/FFFFFF?text=Screenshot+1" width="200"> <img src="https://via.placeholder.com/300x600/4A90E2/FFFFFF?text=Screenshot+2" width="200"> <img src="https://via.placeholder.com/300x600/4A90E2/FFFFFF?text=Screenshot+3" width="200">
+[![Get it on F-Droid](https://img.shields.io/badge/Get%20it%20on-F--Droid-green?style=for-the-badge&logo=f-droid)](https://f-droid.org/packages/dev.robin.privacify/)
+[![Get it on IzzyOnDroid](https://img.shields.io/badge/Get%20it%20on-IzzyOnDroid-orange?style=for-the-badge&logo=fdroid)](https://apt.izzysoft.de/fdroid/index/apk/dev.robin.privacify)
 
 </div>
 
----
+## Features
 
-## 🌟 Features
+### Standard Mode (all devices)
+- **Privacy Dashboard** — real-time privacy score and visibility into your data
+- **Permission Scanner** — identifies apps with risky permission combinations
+- **App Monitoring** — tracks microphone, camera, location access
+- **Permission Analytics** — usage breakdown by permission type and risk level
+- **Lockdown Mode** — one-tap privacy enforcement
 
-### Standard Mode *(Works on all Android devices)*
-- **Privacy Dashboard** - Real-time privacy score and visibility into your data
-- **Permission Scanner** - Identifies risky apps and permission combinations
-- **App Monitoring** - Tracks microphone, camera, location usage
-- **VPN Firewall** - Blocks unwanted network connections
-- **Lockdown Mode** - Instant privacy protection
-- **Usage Analytics** - Insights into app behavior and trends
+### Advanced Mode (Root/Shizuku)
+- **Hardware Kill Switches** — disable microphone and camera at system level
+- **Auto-Guard** — automatically pauses kill switches when sensors in use, restores after idle
+- **AppOps Management** — fine-grained permission control per app
 
-### Advanced Mode *(Requires Root Access)*
-- **Hardware Controls** - Disable mic/camera at system level
-- **Granular Permissions** - Fine-tune app access via AppOps
-- **App Freezing** - Suspend apps without uninstalling
-- **Process Management** - Terminate background processes
-- **System Lockdown** - Maximum privacy enforcement
+## Requirements
 
----
+- Android 7.0+ (Nougat, API 24)
+- Optional: Root or Shizuku for advanced features
 
-## 📱 Requirements
+## Privacy
 
-- Android 5.0+ (Lollipop)
-- Optional: Root access for advanced features
-- Permissions: Usage Stats, VPN (granted on-demand)
+- No ads, no tracking, no analytics
+- Fully open source (Apache 2.0)
+- All data stays on your device
 
----
+## License
 
-## 🔒 Privacy First
-
-- **No Ads, No Tracking** - Completely free and ad-free
-- **Open Source** - Transparent code on GitHub
-- **Local Processing** - All data stays on your device
-- **Regular Updates** - Security patches and new features
-
----
-
-## 📄 License
-
-Licensed under Apache 2.0. See LICENSE for details.
-
----
-
-<div align="center">
-
-**Download now and reclaim your privacy!**
-
-*[GitHub Repository](https://github.com/yourusername/privacify_app)*
-
-</div>
+Licensed under Apache 2.0. See [LICENSE](LICENSE) for details.

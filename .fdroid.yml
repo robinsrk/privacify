@@ -1,0 +1,45 @@
+Categories:
+  - System
+  - Security
+License: Apache-2.0
+AuthorName: Robin
+SourceCode: https://github.com/robinsrk/privacify
+IssueTracker: https://github.com/robinsrk/privacify/issues
+Changelog: https://github.com/robinsrk/privacify/releases
+
+AutoName: Privacify
+Description: |-
+  Privacify is a privacy control center that helps you monitor and manage app permissions and sensor access on your Android device.
+
+  Core features:
+  - Privacy Dashboard with real-time privacy score
+  - Permission Risk Scanner to identify apps with sensitive permissions
+  - App Behavior Monitoring for camera, microphone, and location access
+  - Auto-Guard: temporarily pauses kill switches when sensors are actively in use
+  - Permission usage analytics across all installed apps
+  - System-level Lockdown Mode for instant privacy enforcement
+
+  Advanced Mode (Root/Shizuku):
+  - Hardware Kill Switches: disable microphone and camera at the system level
+  - AppOps Permission Management: granular permission control per app
+  - Auto-Guard automation for kill switches
+
+  No ads. No tracking. All data stays on your device.
+
+RepoType: git
+Repo: https://github.com/robinsrk/privacify
+
+Builds:
+  - versionName: 1.0
+    versionCode: 1
+    commit: main
+    subdir: privacify_free
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
+MaintainerNotes:
+  The pro module at privacify_pro/ is not included in this repository.
+  Free builds fall back gracefully via reflection-based controller provider.

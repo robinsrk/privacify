@@ -1,14 +1,16 @@
-Privacify is a production-grade privacy utility for Android that provides users with a complete control center for managing app permissions and background behavior.
+Privacify is a privacy control center that helps you monitor and manage app permissions and sensor access on your Android device.
 
-Core Features:
+CORE FEATURES:
+- Privacy Dashboard with real-time privacy score
+- Permission Risk Scanner to identify apps with sensitive permissions
+- App Behavior Monitoring for camera, microphone, and location access
+- Auto-Guard (Advanced): Automatically pauses kill switches when camera or mic is in use, restores them after idle
+- In-depth analytics on app permission usage across your device
+- System-level Lockdown Mode for instant privacy enforcement
 
-*   **Privacy Dashboard**: Real-time insights into your device's privacy state.
-*   **Permission Risk Scanner**: Identify apps with sensitive or risky permission access.
-*   **App Behavior Monitoring**: Track camera, microphone, and location usage.
-*   **Advanced Mode (Root)**:
-    *   Revoke permissions via AppOps.
-    *   Freeze/Disable apps.
-    *   Hardware Kill Switches (Camera/Microphone).
-    *   Lockdown Mode.
+ADVANCED MODE (Root/Shizuku):
+- Hardware Kill Switches: Disable microphone and camera at the system level
+- AppOps Permission Management: Revoke individual permissions from any app
+- Auto-Guard: Intelligent automation that temporarily unblocks sensors when actively used
 
-Privacify works in both Standard mode for all users and Advanced mode for users with root access, offering unparalleled control over your digital footprint.
+All data stays on your device. No ads, no tracking, no network access required.
