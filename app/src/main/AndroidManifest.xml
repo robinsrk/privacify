@@ -53,34 +53,6 @@
 			</intent-filter>
 		</activity>
 
-		<service
-			android:name="dev.robin.privacify.pro.root.AutomationService"
-			android:enabled="true"
-			android:exported="false"
-			android:foregroundServiceType="specialUse">
-			<property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-				android:value="Privacy monitoring and root-level hardware control automation" />
-		</service>
-
-		<receiver
-			android:name="dev.robin.privacify.pro.root.BootCompletedReceiver"
-			android:enabled="true"
-			android:exported="false">
-			<intent-filter>
-				<action android:name="android.intent.action.BOOT_COMPLETED" />
-				<action android:name="android.intent.action.QUICKBOOT_POWERON" />
-			</intent-filter>
-		</receiver>
-
-		<receiver
-			android:name="dev.robin.privacify.pro.root.PhoneStateReceiver"
-			android:enabled="true"
-			android:exported="false">
-			<intent-filter>
-				<action android:name="android.intent.action.PHONE_STATE" />
-			</intent-filter>
-		</receiver>
-
 	</application>
 
 </manifest>

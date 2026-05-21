@@ -53,14 +53,19 @@ android {
         }
     }
 
-    sourceSets {
-        getByName("main") {
-            val proDir = File(project.rootDir.parentFile, "privacify_pro/app/src/main/java")
-            if (proDir.exists()) {
-                java.srcDirs(proDir)
-            }
-        }
-    }
+	sourceSets {
+		getByName("main") {
+			val proDir = File(project.rootDir.parentFile, "privacify_pro/app/src/main")
+			if (proDir.exists()) {
+				java.srcDirs(File(proDir, "java"))
+			}
+		}
+		val proDir = File(project.rootDir.parentFile, "privacify_pro/app/src/main")
+		if (proDir.exists()) {
+			getByName("debug").manifest.srcFile(File(proDir, "AndroidManifest.xml"))
+			getByName("release").manifest.srcFile(File(proDir, "AndroidManifest.xml"))
+		}
+	}
 }
 
 dependencies {
