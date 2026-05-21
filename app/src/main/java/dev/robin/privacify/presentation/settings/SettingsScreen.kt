@@ -102,6 +102,7 @@ fun SettingsScreen(
 				onBlockDataChanged = viewModel::onBlockDataChanged
 			)
 			AdvancedSection(
+				context = context,
 				state = state,
 				onAutomationChanged = viewModel::onAutomationChanged,
 				onSystemBlockingChanged = viewModel::onSystemBlockingChanged,
@@ -283,6 +284,7 @@ private fun FirewallSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdvancedSection(
+	context: android.content.Context,
 	state: SettingsUiState,
 	onAutomationChanged: (Boolean) -> Unit,
 	onSystemBlockingChanged: (Boolean) -> Unit,
@@ -405,6 +407,34 @@ private fun AdvancedSection(
 						)
 					}
 				)
+				if (state.automationEnabled) {
+					PrivacifyDivider()
+					SettingsRow(
+						title = "Battery Optimization",
+						subtitle = "Tap to disable for reliable operation",
+						icon = Icons.Outlined.Shield,
+						iconTint = Purple500,
+						iconBackground = Purple500.copy(alpha = 0.15f),
+						onClick = {
+							try {
+								val intent = android.content.Intent().apply {
+									action = android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+									data = android.net.Uri.parse("package:${context.packageName}")
+								}
+								context.startActivity(intent)
+							} catch (e: Exception) {
+								try {
+									val intent = android.content.Intent().apply {
+										action = android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+									}
+									context.startActivity(intent)
+								} catch (e2: Exception) {
+									android.util.Log.e("SettingsScreen", "Failed to open battery settings", e2)
+								}
+							}
+						}
+					)
+				}
 				PrivacifyDivider()
 				SettingsRow(
 					title = "System-level Blocking",
