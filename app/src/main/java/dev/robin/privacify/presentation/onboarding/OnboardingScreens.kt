@@ -455,15 +455,6 @@ private fun OnboardingSystemCheckScreen(
 					)
 				}
 
-				// Local Firewall (Static/Informational)
-				PermissionCard(
-					title = "Local Firewall",
-					description = "Creates a local VPN interface to filter traffic. No data ever leaves your device.",
-					icon = androidx.compose.material.icons.Icons.Rounded.VpnLock,
-					isGranted = true, // Always show as granted/active conceptually
-					isEnabled = false // User cannot toggle this here
-				)
-
 				// Root Access (Conditional)
 				if (state.isRootAvailable) {
 					PermissionCard(
@@ -713,8 +704,8 @@ private fun OnboardingRootDetectionScreen(
 					iconColor = Color(0xFFA855F7)
 				)
 				FeatureRowCard(
-					title = "Kernel-level Firewall",
-					description = "Total control over app network access.",
+					title = "Auto-Guard",
+					description = "Auto-pause kill switches when you use camera or mic.",
 					icon = androidx.compose.material.icons.Icons.Rounded.Security,
 					iconColor = Color(0xFFA855F7)
 				)

@@ -257,16 +257,6 @@ private fun SystemMonitorSection(state: DashboardUiState, viewModel: DashboardVi
 					description = "${state.cameraAccessCount} apps with access",
 					onClick = { Toast.makeText(context, "${state.cameraAccessCount} apps have camera permission", Toast.LENGTH_SHORT).show() }
 				)
-				SensorCard(
-					icon = Icons.Outlined.Security,
-					iconTint = BluePrimary,
-					iconBackground = BluePrimary.copy(alpha = 0.15f),
-					title = "Network",
-					status = if (state.firewallEnabled) "Protected" else "Open",
-					statusColor = if (state.firewallEnabled) Green500 else Orange500,
-					description = state.secureNetworkSummary,
-					onClick = { viewModel.onQuickActionToggled(QuickAction.Firewall) }
-				)
 			}
 		}
 	}
@@ -389,20 +379,9 @@ private fun QuickActionsSection(
 						enabled = state.isRooted,
 						onToggle = { onActionToggle(QuickAction.CameraKill) }
 					)
-					PrivacifyDivider()
-					QuickActionRow(
-						icon = Icons.Outlined.Security,
-						iconTint = Green500,
-						iconBackground = Green500.copy(alpha = 0.15f),
-						title = "Global Firewall",
-						description = "Block trackers & ads",
-						checked = state.firewallEnabled,
-						enabled = true,
-						onToggle = { onActionToggle(QuickAction.Firewall) }
-					)
-				}
 			}
 		}
+	}
 	}
 }
 

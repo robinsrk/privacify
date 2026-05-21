@@ -28,7 +28,6 @@ import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Radar
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
-import androidx.compose.material.icons.outlined.VpnLock
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -96,16 +95,10 @@ fun SettingsScreen(
 				onScanFrequencyClick = viewModel::onScanFrequencyClicked,
 				onThemeClick = viewModel::onThemeClicked
 			)
-			FirewallSection(
-				state = state,
-				onVpnChanged = viewModel::onVpnChanged,
-				onBlockDataChanged = viewModel::onBlockDataChanged
-			)
 			AdvancedSection(
 				context = context,
 				state = state,
 				onAutomationChanged = viewModel::onAutomationChanged,
-				onSystemBlockingChanged = viewModel::onSystemBlockingChanged,
 				onEditHostsClicked = viewModel::onEditHostsClicked,
 				onShellTypeChange = viewModel::setShellType,
 				onRefreshShizuku = { viewModel.refreshShizukuStatus(context) },
@@ -237,57 +230,12 @@ private fun GeneralSection(
 	}
 }
 
-@Composable
-private fun FirewallSection(
-	state: SettingsUiState,
-	onVpnChanged: (Boolean) -> Unit,
-	onBlockDataChanged: (Boolean) -> Unit
-) {
-	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-		PrivacifySectionHeader(title = "Firewall")
-		PrivacifyCard {
-			Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-				SettingsRow(
-					title = "VPN Service",
-					subtitle = if (state.vpnEnabled) "Active • Local firewall" else "Inactive",
-					icon = Icons.Outlined.VpnLock,
-					iconTint = MaterialTheme.colorScheme.primary,
-					iconBackground = MaterialTheme.colorScheme.primaryContainer,
-					onClick = { onVpnChanged(!state.vpnEnabled) },
-					trailing = {
-						PrivacifySwitch(
-							checked = state.vpnEnabled,
-							onCheckedChange = onVpnChanged
-						)
-					}
-				)
-				PrivacifyDivider()
-				SettingsRow(
-					title = "Block Data",
-					subtitle = "Prevent background leaks",
-					icon = Icons.Outlined.Shield,
-					iconTint = Red500,
-					iconBackground = Red500.copy(alpha = 0.15f),
-					onClick = { onBlockDataChanged(!state.blockDataEnabled) },
-					trailing = {
-						PrivacifySwitch(
-							checked = state.blockDataEnabled,
-							onCheckedChange = onBlockDataChanged
-						)
-					}
-				)
-			}
-		}
-	}
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdvancedSection(
 	context: android.content.Context,
 	state: SettingsUiState,
 	onAutomationChanged: (Boolean) -> Unit,
-	onSystemBlockingChanged: (Boolean) -> Unit,
 	onEditHostsClicked: () -> Unit,
 	onShellTypeChange: (String) -> Unit,
 	onRefreshShizuku: () -> Unit,
@@ -435,21 +383,6 @@ private fun AdvancedSection(
 						}
 					)
 				}
-				PrivacifyDivider()
-				SettingsRow(
-					title = "System-level Blocking",
-					subtitle = "Modify IPTables",
-					icon = Icons.Outlined.AdminPanelSettings,
-					iconTint = Red500,
-					iconBackground = Red500.copy(alpha = 0.15f),
-					onClick = { onSystemBlockingChanged(!state.systemBlockingEnabled) },
-					trailing = {
-						PrivacifySwitch(
-							checked = state.systemBlockingEnabled,
-							onCheckedChange = onSystemBlockingChanged
-						)
-					}
-				)
 				PrivacifyDivider()
 				SettingsRow(
 					title = "Edit Hosts File",

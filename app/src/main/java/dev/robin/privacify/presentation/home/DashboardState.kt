@@ -6,8 +6,6 @@ data class DashboardUiState(
 	val micAccessCount: Int = 0,
 	val cameraAccessCount: Int = 0,
 	val locationAccessCount: Int = 0,
-	val firewallEnabled: Boolean = false,
-	val secureNetworkSummary: String = "Firewall disabled",
 	val lockdownEnabled: Boolean = false,
 	val micDisabled: Boolean = false,
 	val cameraDisabled: Boolean = false,
@@ -19,6 +17,5 @@ data class DashboardUiState(
 enum class QuickAction {
 	Lockdown,
 	MicKill,
-	CameraKill,
-	Firewall
+	CameraKill
 }

@@ -14,19 +14,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-	primary = TealPrimary,
-	onPrimary = Color.White,
-	primaryContainer = TealDark,
-	onPrimaryContainer = TealLight,
-	secondary = VioletPrimary,
-	onSecondary = Color.White,
-	secondaryContainer = VioletDark,
-	onSecondaryContainer = VioletLight,
-	tertiary = BluePrimary,
-	onTertiary = Color.White,
-	tertiaryContainer = BlueDark,
-	onTertiaryContainer = BlueLight,
+private val ExpressiveDarkColorScheme = darkColorScheme(
+	primary = Color(0xFF80F0E0),
+	onPrimary = Color(0xFF003830),
+	primaryContainer = Color(0xFF005048),
+	onPrimaryContainer = Color(0xFF9CF5E5),
+	secondary = Color(0xFFC8B0FF),
+	onSecondary = Color(0xFF32105A),
+	secondaryContainer = Color(0xFF4A2872),
+	onSecondaryContainer = Color(0xFFE0D0FF),
+	tertiary = Color(0xFFA0C8FF),
+	onTertiary = Color(0xFF003258),
+	tertiaryContainer = Color(0xFF00497D),
+	onTertiaryContainer = Color(0xFFD0E3FF),
 	background = DarkBackground,
 	onBackground = DarkOnBackground,
 	surface = DarkSurface,
@@ -35,24 +35,24 @@ private val DarkColorScheme = darkColorScheme(
 	onSurfaceVariant = DarkOnSurfaceVariant,
 	outline = DarkOutline,
 	outlineVariant = DarkOutline,
-	error = Red500,
-	onError = Color.White,
+	error = Color(0xFFFFB4AB),
+	onError = Color(0xFF690005),
 	errorContainer = Color(0xFF93000A),
 	onErrorContainer = Color(0xFFFFDAD6)
 )
 
-private val LightColorScheme = lightColorScheme(
-	primary = TealPrimary,
+private val ExpressiveLightColorScheme = lightColorScheme(
+	primary = Color(0xFF006B60),
 	onPrimary = Color.White,
-	primaryContainer = TealLight,
+	primaryContainer = Color(0xFF9CF5E5),
 	onPrimaryContainer = Color(0xFF002019),
-	secondary = VioletPrimary,
+	secondary = Color(0xFF634286),
 	onSecondary = Color.White,
-	secondaryContainer = VioletLight,
+	secondaryContainer = Color(0xFFE8DCFA),
 	onSecondaryContainer = Color(0xFF21005D),
-	tertiary = BluePrimary,
+	tertiary = Color(0xFF00668B),
 	onTertiary = Color.White,
-	tertiaryContainer = BlueLight,
+	tertiaryContainer = Color(0xFFC8E6FF),
 	onTertiaryContainer = Color(0xFF001E38),
 	background = LightBackground,
 	onBackground = LightOnBackground,
@@ -62,7 +62,7 @@ private val LightColorScheme = lightColorScheme(
 	onSurfaceVariant = LightOnSurfaceVariant,
 	outline = LightOutline,
 	outlineVariant = LightOutline,
-	error = Red500,
+	error = Color(0xFFBA1A1A),
 	onError = Color.White,
 	errorContainer = Color(0xFFFFDAD6),
 	onErrorContainer = Color(0xFF410002)
@@ -79,8 +79,8 @@ fun PrivacifyTheme(
 			val context = LocalContext.current
 			if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 		}
-		darkTheme -> DarkColorScheme
-		else -> LightColorScheme
+		darkTheme -> ExpressiveDarkColorScheme
+		else -> ExpressiveLightColorScheme
 	}
 
 	val view = LocalView.current
@@ -94,6 +94,7 @@ fun PrivacifyTheme(
 	MaterialTheme(
 		colorScheme = colorScheme,
 		typography = Typography,
+		shapes = PrivacifyShapes,
 		content = content
 	)
 }

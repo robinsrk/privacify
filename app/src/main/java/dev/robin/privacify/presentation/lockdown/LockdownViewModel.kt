@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.robin.privacify.core.security.PrivacyControllersProvider
-import dev.robin.privacify.domain.firewall.FirewallManager
 import dev.robin.privacify.domain.lockdown.LockdownUseCase
 import dev.robin.privacify.domain.root.RootPrivacyController
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,14 +17,12 @@ import kotlinx.coroutines.launch
 data class LockdownUiState(
 	val lockdownActive: Boolean = false,
 	val micKilled: Boolean = false,
-	val cameraKilled: Boolean = false,
-	val networkBlocked: Boolean = false
+	val cameraKilled: Boolean = false
 )
 
 class LockdownViewModel(
 	private val lockdownUseCase: LockdownUseCase,
-	private val rootPrivacyController: RootPrivacyController,
-	private val firewallManager: FirewallManager
+	private val rootPrivacyController: RootPrivacyController
 ) : ViewModel() {
 
 	private val _state = MutableStateFlow(LockdownUiState())
@@ -40,11 +37,6 @@ class LockdownViewModel(
 		viewModelScope.launch {
 			rootPrivacyController.cameraDisabled.collectLatest { disabled ->
 				_state.update { it.copy(cameraKilled = disabled) }
-			}
-		}
-		viewModelScope.launch {
-			firewallManager.enabled.collectLatest { enabled ->
-				_state.update { it.copy(networkBlocked = enabled) }
 			}
 		}
 	}
@@ -75,24 +67,12 @@ class LockdownViewModel(
 		}
 	}
 
-	fun toggleNetwork() {
-		viewModelScope.launch {
-			val newState = !_state.value.networkBlocked
-			if (newState) {
-				firewallManager.enable()
-			} else {
-				firewallManager.disable()
-			}
-		}
-	}
-
 	companion object {
 		val Factory: ViewModelProvider.Factory = viewModelFactory {
 			initializer {
 				LockdownViewModel(
 					lockdownUseCase = PrivacyControllersProvider.lockdownUseCase,
-					rootPrivacyController = PrivacyControllersProvider.rootPrivacyController,
-					firewallManager = PrivacyControllersProvider.firewallManager
+					rootPrivacyController = PrivacyControllersProvider.rootPrivacyController
 				)
 			}
 		}

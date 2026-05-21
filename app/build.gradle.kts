@@ -81,6 +81,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.shizuku)
     implementation(libs.shizuku.provider)
+    implementation(libs.material)
+    implementation(libs.compose.google.fonts)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

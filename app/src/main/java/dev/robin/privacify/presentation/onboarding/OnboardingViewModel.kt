@@ -14,7 +14,7 @@ import dev.robin.privacify.data.onboarding.DatastoreOnboardingRepository
 import dev.robin.privacify.domain.onboarding.OnboardingRepository
 import dev.robin.privacify.domain.onboarding.OnboardingStep
 import dev.robin.privacify.domain.root.RootManager
-import dev.robin.privacify.pro.utils.ShellUtils
+import rikka.shizuku.Shizuku
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +36,7 @@ class OnboardingViewModel(
 		rootJob = viewModelScope.launch {
 			rootManager.rootStatus.collectLatest { rooted ->
 				val shizukuGranted = try {
-					ShellUtils.isShizukuGranted()
+					Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED
 				} catch (e: Exception) {
 					false
 				}
@@ -82,7 +82,7 @@ class OnboardingViewModel(
 		}
 
 		val shizukuGranted = try {
-			ShellUtils.isShizukuGranted()
+			Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED
 		} catch (e: Exception) {
 			false
 		}

@@ -26,8 +26,8 @@ import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.GppGood
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Security
-import androidx.compose.material.icons.outlined.WifiOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -131,14 +131,6 @@ fun LockdownScreen(
 					subtitle = "Disable all cameras",
 					enabled = state.cameraKilled,
 					onToggle = { viewModel.toggleCamera() }
-				)
-				DividerRow()
-				SensorToggle(
-					icon = Icons.Outlined.WifiOff,
-					title = "Network",
-					subtitle = "Block outbound traffic",
-					enabled = state.networkBlocked,
-					onToggle = { viewModel.toggleNetwork() }
 				)
 			}
 

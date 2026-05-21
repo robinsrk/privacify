@@ -26,17 +26,23 @@ class PrivacifyApplication : Application() {
 		
 		val prefs = UserPreferencesManager.getInstance(this)
 		
-		dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference = prefs.shellType.value
+		try {
+			dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference = prefs.shellType.value
+		} catch (_: Exception) {}
 		
 		CoroutineScope(Dispatchers.IO).launch {
 			prefs.shellType.collect { type ->
-				dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference = type
+				try {
+					dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference = type
+				} catch (_: Exception) {}
 			}
 		}
 		
 		if (prefs.automationEnabled.value) {
-			val controller = PermissionAutomationProvider.provide()
-			controller.automatePermissions(true)
+			try {
+				val controller = PermissionAutomationProvider.provide()
+				controller.automatePermissions(true)
+			} catch (_: Exception) {}
 		}
 		
 		CoroutineScope(Dispatchers.IO).launch {
@@ -49,7 +55,9 @@ class PrivacifyApplication : Application() {
 		}
 		
 		CoroutineScope(Dispatchers.IO).launch {
-			checkAndStartShizuku()
+			try {
+				checkAndStartShizuku()
+			} catch (_: Exception) {}
 		}
 	}
 	
@@ -80,17 +88,19 @@ class PrivacifyApplication : Application() {
 	}
 	
 	private suspend fun checkAndStartShizuku() {
-		val shellType = dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference
-		Log.d(TAG, "Shell type preference: $shellType")
-		
-		if (shellType == "shizuku" || shellType == "auto") {
-			if (!dev.robin.privacify.pro.utils.ShellUtils.isShizukuAvailable()) {
-				Log.d(TAG, "Shizuku not running, attempting to start...")
-				if (dev.robin.privacify.pro.utils.ShellUtils.isRootAvailable()) {
-					dev.robin.privacify.pro.utils.ShellUtils.runRootCommand("shizuku start")
-					Log.d(TAG, "Sent shizuku start command")
+		try {
+			val shellType = dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference
+			Log.d(TAG, "Shell type preference: $shellType")
+			
+			if (shellType == "shizuku" || shellType == "auto") {
+				if (!dev.robin.privacify.pro.utils.ShellUtils.isShizukuAvailable()) {
+					Log.d(TAG, "Shizuku not running, attempting to start...")
+					if (dev.robin.privacify.pro.utils.ShellUtils.isRootAvailable()) {
+						dev.robin.privacify.pro.utils.ShellUtils.runRootCommand("shizuku start")
+						Log.d(TAG, "Sent shizuku start command")
+					}
 				}
 			}
-		}
+		} catch (_: Exception) {}
 	}
 }

@@ -3,10 +3,8 @@ package dev.robin.privacify.data.lockdown
 import android.content.Context
 import android.util.Log
 import dev.robin.privacify.core.utils.AppContextProvider
-import dev.robin.privacify.domain.firewall.FirewallManager
 import dev.robin.privacify.domain.lockdown.LockdownUseCase
 import dev.robin.privacify.domain.root.RootPrivacyController
-import dev.robin.privacify.pro.utils.ShellUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class DefaultLockdownUseCase(
-	private val firewallManager: FirewallManager,
 	private val rootPrivacyController: RootPrivacyController
 ) : LockdownUseCase {
 	
@@ -32,7 +29,6 @@ class DefaultLockdownUseCase(
 	override val isActive: StateFlow<Boolean> = _lockdownActiveFlow.asStateFlow()
 	
 	init {
-		// Restore lockdown state on init
 		CoroutineScope(Dispatchers.IO).launch {
 			restoreLockdownIfNeeded()
 		}
@@ -53,16 +49,12 @@ class DefaultLockdownUseCase(
 		CoroutineScope(Dispatchers.IO).launch {
 			try {
 				if (enabled) {
-					// Enable all lockdown features
-					firewallManager.enable()
 					rootPrivacyController.setMicDisabled(true)
 					rootPrivacyController.setCameraDisabled(true)
 					enableDnd(true)
 				} else {
-					// Disable all lockdown features
 					rootPrivacyController.setMicDisabled(false)
 					rootPrivacyController.setCameraDisabled(false)
-					firewallManager.disable()
 					enableDnd(false)
 				}
 			} catch (e: Exception) {

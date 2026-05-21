@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		instance = this
+
 		enableEdgeToEdge()
 		setContent {
 			val themeMode by ThemePreferenceManager.themeMode.collectAsState()
