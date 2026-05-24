@@ -1,1 +1,1 @@
-Privacy control center for permissions and app monitoring.
+Privacy control center — monitor permissions, track sensors, kill switches.

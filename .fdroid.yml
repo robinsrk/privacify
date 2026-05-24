@@ -9,22 +9,23 @@ Changelog: https://github.com/robinsrk/privacify/releases
 
 AutoName: Privacify
 Description: |-
-  Privacify is a privacy control center that helps you monitor and manage app permissions and sensor access on your Android device.
+  Privacify is a privacy control center that monitors app permissions, tracks sensor access, and secures your device — all without sending data anywhere.
 
   Core features:
-  - Privacy Dashboard with real-time privacy score
-  - Permission Risk Scanner to identify apps with sensitive permissions
-  - App Behavior Monitoring for camera, microphone, and location access
-  - Auto-Guard: temporarily pauses kill switches when sensors are actively in use
-  - Permission usage analytics across all installed apps
-  - System-level Lockdown Mode for instant privacy enforcement
+  - Privacy Dashboard with real-time privacy score and sensor usage overview
+  - Permission Scanner that identifies apps with risky permission combinations
+  - App Monitoring for camera, microphone, and location access
+  - Permission Analytics with breakdowns by type and risk level
+  - Quick Settings Tile for one-tap lockdown from the notification shade
+  - Home Screen Widget for lockdown toggle with live status indicator
+  - Lockdown Mode for instant system-wide sensor deactivation
 
-  Advanced Mode (Root/Shizuku):
-  - Hardware Kill Switches: disable microphone and camera at the system level
-  - AppOps Permission Management: granular permission control per app
-  - Auto-Guard automation for kill switches
+  Advanced features (requires Root or Shizuku):
+  - Hardware Kill Switches to disable microphone and camera at the system level
+  - AppOps Permission Management for granular control per app
+  - Auto-Guard that automatically pauses kill switches when sensors are in use
 
-  No ads. No tracking. All data stays on your device.
+  No ads. No tracking. No network access required. All data stays on your device.
 
 RepoType: git
 Repo: https://github.com/robinsrk/privacify
@@ -51,5 +52,8 @@ Builds:
       - AndroidManifest.xml
 
 MaintainerNotes:
-  The pro module at privacify_pro/ is not included in this repository.
-  Free builds detect pro availability via ProFeature.isAutoGuardAvailable().
+  This is the free (open source) build. The pro module at privacify_pro/ is not
+  included in this repository. Free builds detect pro availability at runtime
+  via ProFeature.isAutoGuardAvailable() and gate Pro features behind a dialog.
+  Build with: cd privacify_free && ./gradlew :app:assembleRelease
+  APK output: app/build/outputs/apk/release/app-release-unsigned.apk
