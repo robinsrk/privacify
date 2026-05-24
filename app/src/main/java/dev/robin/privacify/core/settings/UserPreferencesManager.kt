@@ -18,6 +18,9 @@ class UserPreferencesManager(context: Context) {
     private val _automationEnabled = MutableStateFlow(prefs.getBoolean("automation_enabled", false))
     val automationEnabled: StateFlow<Boolean> = _automationEnabled
 
+    private val _autostartEnabled = MutableStateFlow(prefs.getBoolean("autostart_enabled", false))
+    val autostartEnabled: StateFlow<Boolean> = _autostartEnabled
+
     private val _scanFrequency = MutableStateFlow(prefs.getString("scan_frequency", "Daily") ?: "Daily")
     val scanFrequency: StateFlow<String> = _scanFrequency
 
@@ -46,6 +49,11 @@ class UserPreferencesManager(context: Context) {
     fun setAutomationEnabled(enabled: Boolean) {
         _automationEnabled.value = enabled
         prefs.edit().putBoolean("automation_enabled", enabled).apply()
+    }
+
+    fun setAutostartEnabled(enabled: Boolean) {
+        _autostartEnabled.value = enabled
+        prefs.edit().putBoolean("autostart_enabled", enabled).apply()
     }
 
     fun setScanFrequency(frequency: String) {
