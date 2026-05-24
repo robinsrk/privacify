@@ -4,9 +4,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,16 +29,17 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.robin.privacify.ui.theme.AutoGuardPrimary
+import dev.robin.privacify.ui.theme.AutoGuardGlow
 
 @Composable
 fun PrivacifyCard(
@@ -52,11 +53,57 @@ fun PrivacifyCard(
 				if (onClick != null) Modifier.clickable { onClick() }
 				else Modifier
 			),
-		shape = RoundedCornerShape(24.dp),
+		shape = MaterialTheme.shapes.medium,
 		colors = CardDefaults.cardColors(
 			containerColor = MaterialTheme.colorScheme.surface
 		),
 		elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+	) {
+		content()
+	}
+}
+
+@Composable
+fun PrivacifyExpressiveCard(
+	modifier: Modifier = Modifier,
+	onClick: (() -> Unit)? = null,
+	content: @Composable () -> Unit
+) {
+	Card(
+		modifier = modifier
+			.then(
+				if (onClick != null) Modifier.clickable { onClick() }
+				else Modifier
+			),
+		shape = MaterialTheme.shapes.extraLarge,
+		colors = CardDefaults.cardColors(
+			containerColor = MaterialTheme.colorScheme.surface
+		),
+		elevation = CardDefaults.cardElevation(
+			defaultElevation = 4.dp
+		)
+	) {
+		content()
+	}
+}
+
+@Composable
+fun PrivacifyGradientCard(
+	colors: List<Color>,
+	modifier: Modifier = Modifier,
+	onClick: (() -> Unit)? = null,
+	content: @Composable () -> Unit
+) {
+	Box(
+		modifier = modifier
+			.clip(MaterialTheme.shapes.medium)
+			.background(
+				Brush.linearGradient(colors)
+			)
+			.then(
+				if (onClick != null) Modifier.clickable { onClick() }
+				else Modifier
+			)
 	) {
 		content()
 	}
@@ -100,12 +147,12 @@ fun PrivacifyListItem(
 				}
 				Spacer(modifier = Modifier.width(16.dp))
 			}
-			
+
 			Column(modifier = Modifier.weight(1f)) {
 				Text(
 					text = title,
 					style = MaterialTheme.typography.titleMedium,
-					fontWeight = FontWeight.SemiBold
+					fontWeight = FontWeight.Bold
 				)
 				if (subtitle != null) {
 					Spacer(modifier = Modifier.height(2.dp))
@@ -116,7 +163,7 @@ fun PrivacifyListItem(
 					)
 				}
 			}
-			
+
 			if (trailing != null) {
 				trailing()
 			}
@@ -136,7 +183,7 @@ fun PrivacifySwitch(
 		animationSpec = spring(stiffness = Spring.StiffnessMedium),
 		label = "switch_scale"
 	)
-	
+
 	Switch(
 		checked = checked,
 		onCheckedChange = onCheckedChange,
@@ -166,7 +213,7 @@ fun PrivacifyBadge(
 		Text(
 			text = text,
 			style = MaterialTheme.typography.labelSmall,
-			fontWeight = FontWeight.Bold,
+			fontWeight = FontWeight.Black,
 			color = color
 		)
 	}
@@ -180,30 +227,17 @@ fun PrivacifyChip(
 ) {
 	Box(
 		modifier = modifier
-			.clip(RoundedCornerShape(8.dp))
+			.clip(RoundedCornerShape(10.dp))
 			.background(color.copy(alpha = 0.12f))
 			.padding(horizontal = 12.dp, vertical = 6.dp)
 	) {
 		Text(
 			text = text,
 			style = MaterialTheme.typography.labelMedium,
-			fontWeight = FontWeight.SemiBold,
+			fontWeight = FontWeight.Bold,
 			color = color
 		)
 	}
-}
-
-@Composable
-fun PrivacifyDivider(
-	modifier: Modifier = Modifier
-) {
-	Box(
-		modifier = modifier
-			.fillMaxWidth()
-			.height(1.dp)
-			.padding(horizontal = 16.dp)
-			.background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-	)
 }
 
 @Composable
@@ -223,7 +257,7 @@ fun PrivacifySectionHeader(
 		Text(
 			text = title.uppercase(),
 			style = MaterialTheme.typography.labelMedium,
-			fontWeight = FontWeight.Bold,
+			fontWeight = FontWeight.Black,
 			color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
 		)
 		if (badge != null) {
@@ -277,7 +311,7 @@ fun PrivacifyStatusIndicator(
 		Text(
 			text = status,
 			style = MaterialTheme.typography.labelSmall,
-			fontWeight = FontWeight.Medium,
+			fontWeight = FontWeight.Bold,
 			color = color
 		)
 	}
@@ -290,7 +324,7 @@ fun PrivacifyWarningBanner(
 ) {
 	Surface(
 		modifier = modifier.fillMaxWidth(),
-		shape = RoundedCornerShape(16.dp),
+		shape = MaterialTheme.shapes.medium,
 		color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
 	) {
 		Row(
@@ -307,7 +341,7 @@ fun PrivacifyWarningBanner(
 				Text(
 					text = "!",
 					style = MaterialTheme.typography.titleMedium,
-					fontWeight = FontWeight.Bold,
+					fontWeight = FontWeight.Black,
 					color = MaterialTheme.colorScheme.error
 				)
 			}
@@ -316,6 +350,70 @@ fun PrivacifyWarningBanner(
 				text = text,
 				style = MaterialTheme.typography.bodySmall,
 				color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+			)
+		}
+	}
+}
+
+@Composable
+fun PrivacifyDivider(
+	modifier: Modifier = Modifier
+) {
+	Box(
+		modifier = modifier
+			.fillMaxWidth()
+			.height(1.dp)
+			.padding(horizontal = 16.dp)
+			.background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+	)
+}
+
+@Composable
+fun PrivacifyAutoGuardCard(
+	enabled: Boolean,
+	onToggle: (Boolean) -> Unit,
+	modifier: Modifier = Modifier
+) {
+	val cardColors = listOf(
+		AutoGuardPrimary,
+		AutoGuardPrimary.copy(alpha = 0.85f),
+		AutoGuardGlow.copy(alpha = 0.3f)
+	)
+	Box(
+		modifier = modifier
+			.fillMaxWidth()
+			.clip(MaterialTheme.shapes.extraLarge)
+			.background(
+				Brush.linearGradient(
+					colors = cardColors,
+					start = androidx.compose.ui.geometry.Offset(0f, 0f),
+					end = androidx.compose.ui.geometry.Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+				)
+			)
+			.padding(20.dp)
+	) {
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Column(modifier = Modifier.weight(1f)) {
+				Text(
+					text = "Auto-Guard",
+					style = MaterialTheme.typography.titleLarge,
+					fontWeight = FontWeight.Black,
+					color = Color.White
+				)
+				Spacer(modifier = Modifier.height(4.dp))
+				Text(
+					text = if (enabled) "Automatically manages kill switches\nwhen sensors are in use"
+					else "Intelligent sensor protection",
+					style = MaterialTheme.typography.bodySmall,
+					color = Color.White.copy(alpha = 0.85f)
+				)
+			}
+			PrivacifySwitch(
+				checked = enabled,
+				onCheckedChange = onToggle
 			)
 		}
 	}
