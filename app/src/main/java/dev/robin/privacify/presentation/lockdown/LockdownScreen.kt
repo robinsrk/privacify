@@ -1,8 +1,9 @@
 package dev.robin.privacify.presentation.lockdown
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,8 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -48,8 +47,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.robin.privacify.ui.components.PrivacifyDivider
 import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
 import dev.robin.privacify.ui.components.PrivacifyIconBox
+import dev.robin.privacify.ui.components.PrivacifySwitch
 import dev.robin.privacify.ui.theme.GreenVibrant
 import dev.robin.privacify.ui.theme.LockdownRed
 import dev.robin.privacify.ui.theme.RedVibrant
@@ -120,7 +121,7 @@ fun LockdownScreen(
 						enabled = state.micKilled,
 						onToggle = { viewModel.toggleMic() }
 					)
-					GradientDivider()
+					PrivacifyDivider(modifier = Modifier.padding(start = 52.dp))
 					SensorToggle(
 						icon = Icons.Outlined.CameraAlt,
 						title = "Camera",
@@ -136,7 +137,7 @@ fun LockdownScreen(
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
-					.clip(RoundedCornerShape(16.dp))
+					.clip(MaterialTheme.shapes.large)
 					.background(RedVibrant.copy(alpha = 0.08f))
 					.padding(16.dp)
 			) {
@@ -186,11 +187,17 @@ private fun PanicButton(
 ) {
 	val bgColor by animateColorAsState(
 		targetValue = if (activated) LockdownRed else MaterialTheme.colorScheme.primary,
-		animationSpec = tween(400), label = "panic_bg"
+		animationSpec = spring(
+			stiffness = Spring.StiffnessMedium,
+			dampingRatio = Spring.DampingRatioMediumBouncy
+		), label = "panic_bg"
 	)
 	val scale by animateFloatAsState(
 		targetValue = if (activated) 1.05f else 1f,
-		animationSpec = tween(300),
+		animationSpec = spring(
+			stiffness = Spring.StiffnessMediumLow,
+			dampingRatio = Spring.DampingRatioMediumBouncy
+		),
 		label = "panic_scale"
 	)
 
@@ -247,7 +254,7 @@ private fun StatusBanner(active: Boolean) {
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clip(RoundedCornerShape(16.dp))
+				.clip(MaterialTheme.shapes.large)
 			.background(
 				if (active) GreenVibrant.copy(alpha = 0.12f)
 				else MaterialTheme.colorScheme.surfaceVariant
@@ -316,31 +323,11 @@ private fun SensorToggle(
 				color = MaterialTheme.colorScheme.onSurfaceVariant
 			)
 		}
-		Switch(
+		PrivacifySwitch(
 			checked = enabled,
-			onCheckedChange = { onToggle() },
-			colors = SwitchDefaults.colors(
-				checkedThumbColor = Color.White,
-				checkedTrackColor = RedVibrant
-			)
+			onCheckedChange = { onToggle() }
 		)
 	}
 }
 
-@Composable
-private fun GradientDivider() {
-	Box(
-		modifier = Modifier
-			.fillMaxWidth()
-			.height(1.dp)
-			.padding(start = 68.dp, end = 16.dp)
-			.background(
-				Brush.horizontalGradient(
-					colors = listOf(
-						MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-						Color.Transparent
-					)
-				)
-			)
-	)
-}
+
