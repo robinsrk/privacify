@@ -26,7 +26,6 @@ import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.GppGood
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,8 +47,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.components.PrivacifyIconBox
+import dev.robin.privacify.ui.theme.GreenVibrant
+import dev.robin.privacify.ui.theme.LockdownRed
+import dev.robin.privacify.ui.theme.RedVibrant
 
 @Composable
 fun LockdownScreen(
@@ -68,7 +71,6 @@ fun LockdownScreen(
 				.verticalScroll(rememberScrollState())
 				.padding(horizontal = 16.dp, vertical = 16.dp)
 		) {
-			// Header with back
 			Row(
 				modifier = Modifier.fillMaxWidth(),
 				verticalAlignment = Alignment.CenterVertically
@@ -82,13 +84,13 @@ fun LockdownScreen(
 				Spacer(modifier = Modifier.width(8.dp))
 				Text(
 					text = "Lockdown Mode",
-					style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+					style = MaterialTheme.typography.titleLarge,
+					fontWeight = FontWeight.Black
 				)
 			}
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			// Panic button
 			PanicButton(
 				activated = state.lockdownActive,
 				onToggle = { viewModel.toggleLockdown() }
@@ -96,52 +98,46 @@ fun LockdownScreen(
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			// Status
 			StatusBanner(active = state.lockdownActive)
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			// Sensor toggles
 			Text(
 				text = "SENSOR CONTROLS",
-				style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+				style = MaterialTheme.typography.labelMedium,
+				fontWeight = FontWeight.Black,
 				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 				modifier = Modifier.padding(horizontal = 4.dp)
 			)
 			Spacer(modifier = Modifier.height(8.dp))
 
-			Column(
-				modifier = Modifier
-					.fillMaxWidth()
-					.clip(RoundedCornerShape(20.dp))
-					.background(MaterialTheme.colorScheme.surface),
-				verticalArrangement = Arrangement.spacedBy(0.dp)
-			) {
-				SensorToggle(
-					icon = Icons.Outlined.Mic,
-					title = "Microphone",
-					subtitle = "Disable system microphone",
-					enabled = state.micKilled,
-					onToggle = { viewModel.toggleMic() }
-				)
-				DividerRow()
-				SensorToggle(
-					icon = Icons.Outlined.CameraAlt,
-					title = "Camera",
-					subtitle = "Disable all cameras",
-					enabled = state.cameraKilled,
-					onToggle = { viewModel.toggleCamera() }
-				)
+			PrivacifyExpressiveCard {
+				Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+					SensorToggle(
+						icon = Icons.Outlined.Mic,
+						title = "Microphone",
+						subtitle = "Disable system microphone",
+						enabled = state.micKilled,
+						onToggle = { viewModel.toggleMic() }
+					)
+					GradientDivider()
+					SensorToggle(
+						icon = Icons.Outlined.CameraAlt,
+						title = "Camera",
+						subtitle = "Disable all cameras",
+						enabled = state.cameraKilled,
+						onToggle = { viewModel.toggleCamera() }
+					)
+				}
 			}
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-			// Warning card
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
 					.clip(RoundedCornerShape(16.dp))
-					.background(Color(0xFFEF4444).copy(alpha = 0.08f))
+					.background(RedVibrant.copy(alpha = 0.08f))
 					.padding(16.dp)
 			) {
 				Row(
@@ -152,19 +148,22 @@ fun LockdownScreen(
 						modifier = Modifier
 							.size(24.dp)
 							.clip(CircleShape)
-							.background(Color(0xFFEF4444).copy(alpha = 0.2f)),
+							.background(RedVibrant.copy(alpha = 0.2f)),
 						contentAlignment = Alignment.Center
 					) {
 						Text(
-							text = "⚠",
-							fontSize = 12.sp
+							text = "!",
+							style = MaterialTheme.typography.titleSmall,
+							fontWeight = FontWeight.Black,
+							color = RedVibrant
 						)
 					}
 					Column {
 						Text(
 							text = "Important",
-							style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-							color = Color(0xFFEF4444)
+							style = MaterialTheme.typography.titleSmall,
+							fontWeight = FontWeight.Black,
+							color = RedVibrant
 						)
 						Spacer(modifier = Modifier.height(4.dp))
 						Text(
@@ -186,7 +185,7 @@ private fun PanicButton(
 	onToggle: () -> Unit
 ) {
 	val bgColor by animateColorAsState(
-		targetValue = if (activated) Color(0xFFEF4444) else MaterialTheme.colorScheme.primary,
+		targetValue = if (activated) LockdownRed else MaterialTheme.colorScheme.primary,
 		animationSpec = tween(400), label = "panic_bg"
 	)
 	val scale by animateFloatAsState(
@@ -201,14 +200,14 @@ private fun PanicButton(
 	) {
 		Box(
 			modifier = Modifier
-				.size(180.dp)
+				.size(200.dp)
 				.scale(scale)
 				.clip(CircleShape)
 				.background(
 					Brush.radialGradient(
 						colors = listOf(
 							bgColor,
-							bgColor.copy(alpha = 0.7f)
+							bgColor.copy(alpha = 0.6f)
 						)
 					)
 				)
@@ -222,12 +221,13 @@ private fun PanicButton(
 					imageVector = if (activated) Icons.Outlined.GppGood else Icons.Outlined.Lock,
 					contentDescription = null,
 					tint = Color.White,
-					modifier = Modifier.size(48.dp)
+					modifier = Modifier.size(56.dp)
 				)
 				Spacer(modifier = Modifier.height(8.dp))
 				Text(
 					text = if (activated) "ACTIVE" else "LOCKDOWN",
-					style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold),
+					style = MaterialTheme.typography.titleMedium,
+					fontWeight = FontWeight.Black,
 					color = Color.White
 				)
 			}
@@ -249,7 +249,7 @@ private fun StatusBanner(active: Boolean) {
 			.fillMaxWidth()
 			.clip(RoundedCornerShape(16.dp))
 			.background(
-				if (active) Color(0xFF10B981).copy(alpha = 0.12f)
+				if (active) GreenVibrant.copy(alpha = 0.12f)
 				else MaterialTheme.colorScheme.surfaceVariant
 			)
 			.padding(16.dp),
@@ -259,14 +259,15 @@ private fun StatusBanner(active: Boolean) {
 		Icon(
 			imageVector = Icons.Outlined.Security,
 			contentDescription = null,
-			tint = if (active) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant,
+			tint = if (active) GreenVibrant else MaterialTheme.colorScheme.onSurfaceVariant,
 			modifier = Modifier.size(24.dp)
 		)
 		Column {
 			Text(
 				text = if (active) "All sensors disabled" else "Standard mode",
-				style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-				color = if (active) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurface
+				style = MaterialTheme.typography.titleSmall,
+				fontWeight = FontWeight.Black,
+				color = if (active) GreenVibrant else MaterialTheme.colorScheme.onSurface
 			)
 			Text(
 				text = if (active) "Lockdown is active — device is secured"
@@ -291,62 +292,55 @@ private fun SensorToggle(
 			.fillMaxWidth()
 			.clickable { onToggle() }
 			.padding(horizontal = 16.dp, vertical = 12.dp),
-		horizontalArrangement = Arrangement.SpaceBetween,
 		verticalAlignment = Alignment.CenterVertically
 	) {
-		Row(
-			horizontalArrangement = Arrangement.spacedBy(12.dp),
-			verticalAlignment = Alignment.CenterVertically,
-			modifier = Modifier.weight(1f)
-		) {
-			Box(
-				modifier = Modifier
-					.size(40.dp)
-					.clip(CircleShape)
-					.background(
-						if (enabled) Color(0xFFEF4444).copy(alpha = 0.12f)
-						else MaterialTheme.colorScheme.surfaceVariant
-					),
-				contentAlignment = Alignment.Center
-			) {
-				Icon(
-					imageVector = icon,
-					contentDescription = null,
-					tint = if (enabled) Color(0xFFEF4444) else MaterialTheme.colorScheme.onSurfaceVariant,
-					modifier = Modifier.size(20.dp)
-				)
-			}
-			Column {
-				Text(
-					text = title,
-					style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
-				)
-				Spacer(modifier = Modifier.height(2.dp))
-				Text(
-					text = subtitle,
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant
-				)
-			}
+		PrivacifyIconBox(
+			icon = icon,
+			tint = if (enabled) RedVibrant else MaterialTheme.colorScheme.onSurfaceVariant,
+			background = if (enabled) RedVibrant.copy(alpha = 0.12f)
+			else MaterialTheme.colorScheme.surfaceVariant,
+			size = 40,
+			iconSize = 20
+		)
+		Spacer(modifier = Modifier.width(12.dp))
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				text = title,
+				style = MaterialTheme.typography.bodyLarge,
+				fontWeight = FontWeight.Bold
+			)
+			Spacer(modifier = Modifier.height(2.dp))
+			Text(
+				text = subtitle,
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
 		}
 		Switch(
 			checked = enabled,
 			onCheckedChange = { onToggle() },
 			colors = SwitchDefaults.colors(
 				checkedThumbColor = Color.White,
-				checkedTrackColor = Color(0xFFEF4444)
+				checkedTrackColor = RedVibrant
 			)
 		)
 	}
 }
 
 @Composable
-private fun DividerRow() {
+private fun GradientDivider() {
 	Box(
 		modifier = Modifier
 			.fillMaxWidth()
-			.padding(horizontal = 16.dp)
 			.height(1.dp)
-			.background(MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+			.padding(start = 68.dp, end = 16.dp)
+			.background(
+				Brush.horizontalGradient(
+					colors = listOf(
+						MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+						Color.Transparent
+					)
+				)
+			)
 	)
 }
