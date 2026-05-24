@@ -4,7 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +52,7 @@ import androidx.compose.material.icons.filled.Lock
 import dev.robin.privacify.core.provider.ProFeature
 import dev.robin.privacify.ui.theme.AutoGuardGlow
 import dev.robin.privacify.ui.theme.AutoGuardPrimary
+import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
 
 @Composable
 fun PrivacifyCard(
@@ -68,7 +68,7 @@ fun PrivacifyCard(
 			),
 		shape = MaterialTheme.shapes.medium,
 		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surface
+			containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
 		),
 		elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
 	) {
@@ -90,10 +90,10 @@ fun PrivacifyExpressiveCard(
 			),
 		shape = MaterialTheme.shapes.extraLarge,
 		colors = CardDefaults.cardColors(
-			containerColor = MaterialTheme.colorScheme.surface
+			containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
 		),
 		elevation = CardDefaults.cardElevation(
-			defaultElevation = 4.dp
+			defaultElevation = 0.dp
 		)
 	) {
 		content()
@@ -147,7 +147,7 @@ fun PrivacifyListItem(
 				Box(
 					modifier = Modifier
 						.size(48.dp)
-						.clip(RoundedCornerShape(16.dp))
+						.clip(MaterialTheme.shapes.medium)
 						.background(leadingIconBackground),
 					contentAlignment = Alignment.Center
 				) {
@@ -193,7 +193,10 @@ fun PrivacifySwitch(
 ) {
 	val scale by animateFloatAsState(
 		targetValue = if (checked) 1f else 0.95f,
-		animationSpec = spring(stiffness = Spring.StiffnessMedium),
+		animationSpec = spring(
+			stiffness = Spring.StiffnessMediumLow,
+			dampingRatio = Spring.DampingRatioMediumBouncy
+		),
 		label = "switch_scale"
 	)
 
@@ -206,7 +209,7 @@ fun PrivacifySwitch(
 			checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
 			checkedTrackColor = MaterialTheme.colorScheme.primary,
 			uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-			uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+			uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
 		)
 	)
 }
@@ -219,7 +222,7 @@ fun PrivacifyBadge(
 ) {
 	Box(
 		modifier = modifier
-			.clip(RoundedCornerShape(999.dp))
+			.clip(MaterialTheme.shapes.extraSmall)
 			.background(color.copy(alpha = 0.15f))
 			.padding(horizontal = 10.dp, vertical = 4.dp)
 	) {
@@ -240,7 +243,7 @@ fun PrivacifyChip(
 ) {
 	Box(
 		modifier = modifier
-			.clip(RoundedCornerShape(10.dp))
+			.clip(MaterialTheme.shapes.small)
 			.background(color.copy(alpha = 0.12f))
 			.padding(horizontal = 12.dp, vertical = 6.dp)
 	) {
@@ -263,7 +266,7 @@ fun PrivacifySectionHeader(
 	Row(
 		modifier = modifier
 			.fillMaxWidth()
-			.padding(horizontal = 4.dp, vertical = 4.dp),
+			.padding(horizontal = 4.dp, vertical = 8.dp),
 		horizontalArrangement = Arrangement.SpaceBetween,
 		verticalAlignment = Alignment.CenterVertically
 	) {
@@ -291,7 +294,7 @@ fun PrivacifyIconBox(
 	Box(
 		modifier = modifier
 			.size(size.dp)
-			.clip(RoundedCornerShape(16.dp))
+			.clip(MaterialTheme.shapes.medium)
 			.background(background),
 		contentAlignment = Alignment.Center
 	) {
@@ -337,7 +340,7 @@ fun PrivacifyWarningBanner(
 ) {
 	Surface(
 		modifier = modifier.fillMaxWidth(),
-		shape = MaterialTheme.shapes.medium,
+		shape = MaterialTheme.shapes.small,
 		color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
 	) {
 		Row(
@@ -347,7 +350,7 @@ fun PrivacifyWarningBanner(
 			Box(
 				modifier = Modifier
 					.size(32.dp)
-					.clip(RoundedCornerShape(8.dp))
+					.clip(MaterialTheme.shapes.extraSmall)
 					.background(MaterialTheme.colorScheme.errorContainer),
 				contentAlignment = Alignment.Center
 			) {
@@ -461,7 +464,7 @@ fun PrivacifyProDialog(
 
 	Dialog(onDismissRequest = onDismiss) {
 		Surface(
-			shape = RoundedCornerShape(28.dp),
+			shape = MaterialTheme.shapes.extraLarge,
 			color = MaterialTheme.colorScheme.surface,
 			tonalElevation = 8.dp
 		) {
@@ -520,7 +523,7 @@ fun PrivacifyProDialog(
 						textAlign = TextAlign.Center
 					)
 
-					Spacer(modifier = Modifier.height(6.dp))
+					Spacer(modifier = Modifier.height(8.dp))
 
 					Text(
 						text = "Upgrade to Pro to unlock this and other premium features.",
@@ -529,7 +532,7 @@ fun PrivacifyProDialog(
 						textAlign = TextAlign.Center
 					)
 
-					Spacer(modifier = Modifier.height(20.dp))
+					Spacer(modifier = Modifier.height(24.dp))
 
 					Button(
 						onClick = {
@@ -540,7 +543,7 @@ fun PrivacifyProDialog(
 						modifier = Modifier
 							.fillMaxWidth()
 							.height(48.dp),
-						shape = RoundedCornerShape(14.dp),
+						shape = ExpressiveLargeIncreased,
 						colors = ButtonDefaults.buttonColors(
 							containerColor = AutoGuardPrimary
 						)

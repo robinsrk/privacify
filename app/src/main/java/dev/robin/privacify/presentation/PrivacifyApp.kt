@@ -73,11 +73,12 @@ private fun MainNavigationShell() {
 	val showBottomBar = currentRoute in destinations.map { it.route }
 
 	Scaffold(
+		containerColor = MaterialTheme.colorScheme.background,
 		bottomBar = {
 			if (showBottomBar) {
 				NavigationBar(
-					containerColor = MaterialTheme.colorScheme.surface,
-					tonalElevation = 4.dp
+					containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+					tonalElevation = 0.dp
 				) {
 					destinations.forEach { destination ->
 						val selected = currentRoute == destination.route
