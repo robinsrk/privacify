@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+val isProBuild = gradle.startParameter.taskNames.any { task ->
+	task.contains("ProRelease", ignoreCase = true)
+}
+
 android {
     namespace = "dev.robin.privacify"
     compileSdk = 34
@@ -54,18 +58,21 @@ android {
     }
 
 	sourceSets {
-		getByName("main") {
+		if (isProBuild) {
 			val proDir = File(project.rootDir.parentFile, "privacify_pro/app/src/main")
-			if (proDir.exists()) {
+			getByName("main") {
 				java.srcDirs(File(proDir, "java"))
 			}
-		}
-		val proDir = File(project.rootDir.parentFile, "privacify_pro/app/src/main")
-		if (proDir.exists()) {
 			getByName("debug").manifest.srcFile(File(proDir, "AndroidManifest.xml"))
 			getByName("release").manifest.srcFile(File(proDir, "AndroidManifest.xml"))
 		}
 	}
+}
+
+tasks.register("assembleProRelease") {
+	dependsOn("assembleRelease")
+	description = "Assembles a release build with Pro features (root/Shizuku hardware controls)"
+	group = "build"
 }
 
 dependencies {

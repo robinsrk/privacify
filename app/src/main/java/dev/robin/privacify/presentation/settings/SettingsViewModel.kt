@@ -124,7 +124,9 @@ class SettingsViewModel(
 	fun requestShizukuAutoStart(context: android.content.Context?) {
 		try {
 			context?.let {
-				dev.robin.privacify.pro.utils.ShellUtils.requestShizukuAutoStart(it)
+				val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
+				val method = clazz.getMethod("requestShizukuAutoStart", android.content.Context::class.java)
+				method.invoke(null, it)
 			}
 		} catch (e: Exception) {
 		}
@@ -138,7 +140,9 @@ class SettingsViewModel(
 
 	private suspend fun refreshShizukuStatusInternal(context: android.content.Context?) {
 		val status = try {
-			dev.robin.privacify.pro.utils.ShellUtils.getShizukuStatus(context)
+			val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
+			val method = clazz.getMethod("getShizukuStatus", android.content.Context::class.java)
+			method.invoke(null, context) as? String ?: "Error"
 		} catch (e: Exception) {
 			"Error"
 		}

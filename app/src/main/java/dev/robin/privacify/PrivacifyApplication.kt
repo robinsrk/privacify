@@ -27,13 +27,17 @@ class PrivacifyApplication : Application() {
 		val prefs = UserPreferencesManager.getInstance(this)
 		
 		try {
-			dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference = prefs.shellType.value
+			val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
+			val setter = clazz.getMethod("setShellTypePreference", String::class.java)
+			setter.invoke(null, prefs.shellType.value)
 		} catch (_: Exception) {}
 		
 		CoroutineScope(Dispatchers.IO).launch {
 			prefs.shellType.collect { type ->
 				try {
-					dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference = type
+					val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
+					val setter = clazz.getMethod("setShellTypePreference", String::class.java)
+					setter.invoke(null, type)
 				} catch (_: Exception) {}
 				try {
 					dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
@@ -102,14 +106,19 @@ class PrivacifyApplication : Application() {
 	
 	private suspend fun checkAndStartShizuku() {
 		try {
-			val shellType = dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference
+			val shellCls = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
+			val getter = shellCls.getMethod("getShellTypePreference")
+			val shellType = getter.invoke(null) as? String ?: "auto"
 			Log.d(TAG, "Shell type preference: $shellType")
 			
 			if (shellType == "shizuku" || shellType == "auto") {
-				if (!dev.robin.privacify.pro.utils.ShellUtils.isShizukuAvailable()) {
+				val isAvailable = shellCls.getMethod("isShizukuAvailable").invoke(null) as? Boolean ?: false
+				if (!isAvailable) {
 					Log.d(TAG, "Shizuku not running, attempting to start...")
-					if (dev.robin.privacify.pro.utils.ShellUtils.isRootAvailable()) {
-						dev.robin.privacify.pro.utils.ShellUtils.runRootCommand("shizuku start")
+					val isRoot = shellCls.getMethod("isRootAvailable").invoke(null) as? Boolean ?: false
+					if (isRoot) {
+						val runRoot = shellCls.getMethod("runRootCommand", String::class.java)
+						runRoot.invoke(null, "shizuku start")
 						Log.d(TAG, "Sent shizuku start command")
 					}
 				}
