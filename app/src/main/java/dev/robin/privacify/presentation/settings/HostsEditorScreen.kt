@@ -40,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
 import dev.robin.privacify.ui.theme.GreenVibrant
 
 @Composable
@@ -106,7 +107,7 @@ fun HostsEditorScreen(
 							value = state.newDomain,
 							onValueChange = { viewModel.onNewDomainChanged(it) },
 							modifier = Modifier.weight(1f),
-							shape = RoundedCornerShape(14.dp),
+							shape = ExpressiveLargeIncreased,
 							singleLine = true,
 							placeholder = { Text("domain.to.block") },
 							colors = OutlinedTextFieldDefaults.colors(
@@ -118,7 +119,7 @@ fun HostsEditorScreen(
 						)
 						Button(
 							onClick = { viewModel.addBlockRule() },
-							shape = RoundedCornerShape(14.dp),
+							shape = ExpressiveLargeIncreased,
 							colors = ButtonDefaults.buttonColors(
 								containerColor = MaterialTheme.colorScheme.primary,
 								contentColor = MaterialTheme.colorScheme.onPrimary
@@ -157,7 +158,7 @@ fun HostsEditorScreen(
 				modifier = Modifier
 					.fillMaxWidth()
 					.weight(1f),
-				shape = RoundedCornerShape(16.dp),
+				shape = ExpressiveLargeIncreased,
 				textStyle = MaterialTheme.typography.bodySmall.copy(
 					fontWeight = FontWeight.Medium
 				),
@@ -176,7 +177,7 @@ fun HostsEditorScreen(
 				modifier = Modifier
 					.fillMaxWidth()
 					.height(52.dp),
-				shape = RoundedCornerShape(16.dp),
+				shape = ExpressiveLargeIncreased,
 				colors = ButtonDefaults.buttonColors(
 					containerColor = GreenVibrant,
 					contentColor = MaterialTheme.colorScheme.onPrimary
