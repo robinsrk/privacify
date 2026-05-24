@@ -42,4 +42,4 @@ Builds:
 
 MaintainerNotes:
   The pro module at privacify_pro/ is not included in this repository.
-  Free builds fall back gracefully via reflection-based controller provider.
+  Free builds detect pro availability via ProFeature.isAutoGuardAvailable().

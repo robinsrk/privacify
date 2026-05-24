@@ -60,6 +60,9 @@ android {
 	sourceSets {
 		if (isProBuild) {
 			val proDir = File(project.rootDir.parentFile, "privacify_pro/app/src/main")
+			if (!proDir.exists()) {
+				throw GradleException("Pro module not found at $proDir. The privacify_pro/ directory is required for pro builds.")
+			}
 			getByName("main") {
 				java.srcDirs(File(proDir, "java"))
 			}
@@ -97,8 +100,6 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.shizuku)
     implementation(libs.shizuku.provider)
-    implementation(libs.material)
-    implementation(libs.compose.google.fonts)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
