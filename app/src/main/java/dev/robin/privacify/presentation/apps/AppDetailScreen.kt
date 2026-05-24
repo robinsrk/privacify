@@ -50,8 +50,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.domain.apps.AppRiskLevel
 import dev.robin.privacify.ui.components.PrivacifyBadge
+import dev.robin.privacify.ui.components.PrivacifyDivider
 import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
 import dev.robin.privacify.ui.components.PrivacifyIconBox
+import dev.robin.privacify.ui.theme.ExpressiveExtraLargeIncreased
+import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
 import dev.robin.privacify.ui.theme.GreenVibrant
 import dev.robin.privacify.ui.theme.OrangeVibrant
 import dev.robin.privacify.ui.theme.RedVibrant
@@ -171,7 +174,7 @@ private fun Header(
 		Box(
 			modifier = Modifier
 				.padding(top = 8.dp, bottom = 12.dp)
-				.clip(RoundedCornerShape(28.dp))
+				.clip(ExpressiveExtraLargeIncreased)
 				.background(riskColor.copy(alpha = 0.15f))
 				.padding(24.dp)
 		) {
@@ -302,20 +305,7 @@ private fun PermissionsSection(
 						isGranted = perm.isGranted
 					)
 					if (index < app.permissions.lastIndex) {
-						Box(
-							modifier = Modifier
-								.fillMaxWidth()
-								.padding(start = 72.dp, end = 16.dp)
-								.height(1.dp)
-								.background(
-									Brush.horizontalGradient(
-										listOf(
-											MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-											Color.Transparent
-										)
-									)
-								)
-						)
+						PrivacifyDivider(modifier = Modifier.padding(start = 56.dp))
 					}
 				}
 			}
@@ -486,7 +476,7 @@ private fun AdvancedActionCard(
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clip(RoundedCornerShape(20.dp))
+			.clip(ExpressiveLargeIncreased)
 			.background(RedVibrant.copy(alpha = 0.06f * alpha))
 			.clickable(enabled = enabled) { onClick() }
 			.padding(horizontal = 16.dp, vertical = 12.dp),
