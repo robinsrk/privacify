@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -24,11 +23,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.robin.privacify.ui.components.PrivacifyBadge
+import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.theme.BlueVibrant
+import dev.robin.privacify.ui.theme.GreenVibrant
+import dev.robin.privacify.ui.theme.OrangeVibrant
+import dev.robin.privacify.ui.theme.PurpleVibrant
+import dev.robin.privacify.ui.theme.RedVibrant
 
 @Composable
 fun AnalyticsScreen() {
@@ -47,7 +54,7 @@ fun AnalyticsScreen() {
 				.padding(horizontal = 16.dp, vertical = 16.dp),
 			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
-			Header(totalApps = state.totalApps)
+			Header(totalApps = state.totalApps, totalGrants = state.totalPermissionGrants)
 			PermissionDistributionCard(state)
 			RiskBreakdownCard(state)
 			HighRiskAppsCard(state)
@@ -57,7 +64,8 @@ fun AnalyticsScreen() {
 
 @Composable
 private fun Header(
-	totalApps: Int
+	totalApps: Int,
+	totalGrants: Int
 ) {
 	Row(
 		modifier = Modifier.fillMaxWidth(),
@@ -67,26 +75,20 @@ private fun Header(
 		Column {
 			Text(
 				text = "Privacy Analytics",
-				style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+				style = MaterialTheme.typography.titleLarge,
+				fontWeight = FontWeight.Black
 			)
 			Spacer(modifier = Modifier.height(2.dp))
 			Text(
-				text = "Permission overview & risk summary",
+				text = "$totalGrants grants across $totalApps apps",
 				style = MaterialTheme.typography.bodySmall,
 				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
 			)
 		}
-		Box(
-			modifier = Modifier
-				.clip(MaterialTheme.shapes.small)
-				.background(MaterialTheme.colorScheme.surfaceVariant)
-				.padding(horizontal = 12.dp, vertical = 6.dp)
-		) {
-			Text(
-				text = "$totalApps apps",
-				style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium)
-			)
-		}
+		PrivacifyBadge(
+			text = "$totalApps apps",
+			color = MaterialTheme.colorScheme.primary
+		)
 	}
 }
 
@@ -94,24 +96,26 @@ private fun Header(
 private fun PermissionDistributionCard(
 	state: AnalyticsUiState
 ) {
-	Column(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(MaterialTheme.shapes.large)
-			.background(MaterialTheme.colorScheme.surface)
-			.padding(16.dp),
-		verticalArrangement = Arrangement.spacedBy(12.dp)
-	) {
-		Text(
-			text = "Permission Distribution",
-			style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-		)
-		Spacer(modifier = Modifier.height(4.dp))
-		PermissionBar(label = "Location", count = state.locationAppCount, color = Color(0xFF3B82F6), maxCount = maxOf(state.locationAppCount, state.cameraAppCount, state.micAppCount, state.contactsAppCount, state.smsAppCount, 1))
-		PermissionBar(label = "Camera", count = state.cameraAppCount, color = Color(0xFF10B981), maxCount = maxOf(state.locationAppCount, state.cameraAppCount, state.micAppCount, state.contactsAppCount, state.smsAppCount, 1))
-		PermissionBar(label = "Microphone", count = state.micAppCount, color = Color(0xFFEF4444), maxCount = maxOf(state.locationAppCount, state.cameraAppCount, state.micAppCount, state.contactsAppCount, state.smsAppCount, 1))
-		PermissionBar(label = "Contacts", count = state.contactsAppCount, color = Color(0xFFF97316), maxCount = maxOf(state.locationAppCount, state.cameraAppCount, state.micAppCount, state.contactsAppCount, state.smsAppCount, 1))
-		PermissionBar(label = "SMS/Phone", count = state.smsAppCount, color = Color(0xFFA855F7), maxCount = maxOf(state.locationAppCount, state.cameraAppCount, state.micAppCount, state.contactsAppCount, state.smsAppCount, 1))
+	PrivacifyExpressiveCard {
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			verticalArrangement = Arrangement.spacedBy(12.dp)
+		) {
+			Text(
+				text = "Permission Distribution",
+				style = MaterialTheme.typography.titleMedium,
+				fontWeight = FontWeight.Black
+			)
+			Spacer(modifier = Modifier.height(4.dp))
+			val maxCount = maxOf(state.locationAppCount, state.cameraAppCount, state.micAppCount, state.contactsAppCount, state.smsAppCount, 1)
+			PermissionBar(label = "Location", count = state.locationAppCount, color = BlueVibrant, maxCount = maxCount)
+			PermissionBar(label = "Camera", count = state.cameraAppCount, color = GreenVibrant, maxCount = maxCount)
+			PermissionBar(label = "Microphone", count = state.micAppCount, color = RedVibrant, maxCount = maxCount)
+			PermissionBar(label = "Contacts", count = state.contactsAppCount, color = OrangeVibrant, maxCount = maxCount)
+			PermissionBar(label = "SMS/Phone", count = state.smsAppCount, color = PurpleVibrant, maxCount = maxCount)
+		}
 	}
 }
 
@@ -129,28 +133,33 @@ private fun PermissionBar(
 		) {
 			Text(
 				text = label,
-				style = MaterialTheme.typography.bodyMedium
+				style = MaterialTheme.typography.bodyMedium,
+				fontWeight = FontWeight.SemiBold
 			)
 			Text(
 				text = "$count app${if (count != 1) "s" else ""}",
 				style = MaterialTheme.typography.bodyMedium,
-				fontWeight = FontWeight.SemiBold,
+				fontWeight = FontWeight.Black,
 				color = color
 			)
 		}
 		Box(
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(8.dp)
-				.clip(RoundedCornerShape(4.dp))
+				.height(10.dp)
+				.clip(RoundedCornerShape(5.dp))
 				.background(MaterialTheme.colorScheme.surfaceVariant)
 		) {
 			Box(
 				modifier = Modifier
 					.fillMaxWidth(count.toFloat() / maxCount)
-					.height(8.dp)
-					.clip(RoundedCornerShape(4.dp))
-					.background(color)
+					.height(10.dp)
+					.clip(RoundedCornerShape(5.dp))
+					.background(
+						Brush.horizontalGradient(
+							listOf(color, color.copy(alpha = 0.7f))
+						)
+					)
 			)
 		}
 	}
@@ -160,31 +169,32 @@ private fun PermissionBar(
 private fun RiskBreakdownCard(
 	state: AnalyticsUiState
 ) {
-	Column(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(MaterialTheme.shapes.large)
-			.background(MaterialTheme.colorScheme.surface)
-			.padding(16.dp),
-		verticalArrangement = Arrangement.spacedBy(12.dp)
-	) {
-		Text(
-			text = "Risk Breakdown",
-			style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-		)
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.SpaceEvenly
+	PrivacifyExpressiveCard {
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
-			RiskBadge(label = "High", count = state.highRiskCount, color = Color(0xFFEF4444))
-			RiskBadge(label = "Medium", count = state.mediumRiskCount, color = Color(0xFFF97316))
-			RiskBadge(label = "Low", count = state.lowRiskCount, color = Color(0xFF10B981))
+			Text(
+				text = "Risk Breakdown",
+				style = MaterialTheme.typography.titleMedium,
+				fontWeight = FontWeight.Black
+			)
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.SpaceEvenly
+			) {
+				RiskBadge(label = "High", count = state.highRiskCount, color = RedVibrant)
+				RiskBadge(label = "Medium", count = state.mediumRiskCount, color = OrangeVibrant)
+				RiskBadge(label = "Low", count = state.lowRiskCount, color = GreenVibrant)
+			}
+			Text(
+				text = "${state.totalPermissionGrants} total permission grants across ${state.totalApps} apps",
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
 		}
-		Text(
-			text = "${state.totalPermissionGrants} total permission grants across ${state.totalApps} apps",
-			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onSurfaceVariant
-		)
 	}
 }
 
@@ -199,12 +209,14 @@ private fun RiskBadge(
 	) {
 		Text(
 			text = count.toString(),
-			style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+			style = MaterialTheme.typography.displaySmall,
+			fontWeight = FontWeight.Black,
 			color = color
 		)
 		Text(
 			text = label,
 			style = MaterialTheme.typography.labelMedium,
+			fontWeight = FontWeight.Bold,
 			color = MaterialTheme.colorScheme.onSurfaceVariant
 		)
 	}
@@ -214,43 +226,44 @@ private fun RiskBadge(
 private fun HighRiskAppsCard(
 	state: AnalyticsUiState
 ) {
-	Column(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(MaterialTheme.shapes.large)
-			.background(MaterialTheme.colorScheme.surface)
-			.padding(16.dp),
-		verticalArrangement = Arrangement.spacedBy(8.dp)
-	) {
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.SpaceBetween,
-			verticalAlignment = Alignment.CenterVertically
+	PrivacifyExpressiveCard {
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			verticalArrangement = Arrangement.spacedBy(8.dp)
 		) {
-			Text(
-				text = "High Risk Apps",
-				style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-			)
-		}
-		if (state.highRiskApps.isEmpty()) {
-			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(vertical = 16.dp),
-				contentAlignment = Alignment.Center
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.SpaceBetween,
+				verticalAlignment = Alignment.CenterVertically
 			) {
 				Text(
-					text = "No high risk apps detected",
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant
+					text = "High Risk Apps",
+					style = MaterialTheme.typography.titleMedium,
+					fontWeight = FontWeight.Black
 				)
 			}
-		}
-		state.highRiskApps.forEach { app ->
-			HighRiskRow(
-				name = app.appName,
-				description = app.permissionsSummary
-			)
+			if (state.highRiskApps.isEmpty()) {
+				Box(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(vertical = 16.dp),
+					contentAlignment = Alignment.Center
+				) {
+					Text(
+						text = "No high risk apps detected",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
+			state.highRiskApps.forEach { app ->
+				HighRiskRow(
+					name = app.appName,
+					description = app.permissionsSummary
+				)
+			}
 		}
 	}
 }
@@ -263,8 +276,8 @@ private fun HighRiskRow(
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clip(MaterialTheme.shapes.medium)
-			.background(Color(0xFFEF4444).copy(alpha = 0.06f))
+			.clip(RoundedCornerShape(16.dp))
+			.background(RedVibrant.copy(alpha = 0.06f))
 			.padding(12.dp),
 		horizontalArrangement = Arrangement.spacedBy(12.dp),
 		verticalAlignment = Alignment.CenterVertically
@@ -272,14 +285,15 @@ private fun HighRiskRow(
 		Box(
 			modifier = Modifier
 				.size(40.dp)
-				.clip(MaterialTheme.shapes.small)
-				.background(Color(0xFFEF4444).copy(alpha = 0.15f)),
+				.clip(RoundedCornerShape(14.dp))
+				.background(RedVibrant.copy(alpha = 0.15f)),
 			contentAlignment = Alignment.Center
 		) {
 			Text(
 				text = name.firstOrNull()?.uppercase() ?: "",
-				style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-				color = Color(0xFFEF4444)
+				style = MaterialTheme.typography.titleSmall,
+				fontWeight = FontWeight.Black,
+				color = RedVibrant
 			)
 		}
 		Column(modifier = Modifier.weight(1f)) {
@@ -290,20 +304,10 @@ private fun HighRiskRow(
 			) {
 				Text(
 					text = name,
-					style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+					style = MaterialTheme.typography.bodyMedium,
+					fontWeight = FontWeight.Bold
 				)
-				Box(
-					modifier = Modifier
-						.clip(MaterialTheme.shapes.small)
-						.background(Color(0xFFEF4444).copy(alpha = 0.12f))
-						.padding(horizontal = 6.dp, vertical = 2.dp)
-				) {
-					Text(
-						text = "HIGH",
-						style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-						color = Color(0xFFEF4444)
-					)
-				}
+				PrivacifyBadge(text = "HIGH", color = RedVibrant)
 			}
 			Spacer(modifier = Modifier.height(2.dp))
 			Text(
