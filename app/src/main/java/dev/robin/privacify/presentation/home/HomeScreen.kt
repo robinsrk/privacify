@@ -334,12 +334,6 @@ private fun QuickActionsSection(
 		)
 		PrivacifyCard {
 			Column(modifier = Modifier.padding(8.dp)) {
-				Text(
-					text = "Debug: isRooted=${state.isRooted}, shellType=${state.shellType}",
-					style = MaterialTheme.typography.labelSmall,
-					color = MaterialTheme.colorScheme.error
-				)
-				Spacer(modifier = Modifier.height(4.dp))
 				Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
 					QuickActionRow(
 						icon = Icons.Outlined.Lock,

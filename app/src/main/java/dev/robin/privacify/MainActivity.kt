@@ -12,6 +12,9 @@ import dev.robin.privacify.core.theme.AppThemeMode
 import dev.robin.privacify.core.theme.ThemePreferenceManager
 import dev.robin.privacify.presentation.PrivacifyApp
 import dev.robin.privacify.ui.theme.PrivacifyTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 
 class MainActivity : ComponentActivity() {
@@ -48,6 +51,11 @@ class MainActivity : ComponentActivity() {
 					Log.d("MainActivity", "Shizuku permission result: $grantResult")
 					if (grantResult == android.content.pm.PackageManager.PERMISSION_GRANTED) {
 						Log.d("MainActivity", "Shizuku permission granted!")
+						CoroutineScope(Dispatchers.IO).launch {
+							try {
+								dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
+							} catch (_: Exception) {}
+						}
 					} else {
 						Log.d("MainActivity", "Shizuku permission denied")
 					}

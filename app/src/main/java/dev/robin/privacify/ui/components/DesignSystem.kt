@@ -216,7 +216,7 @@ fun PrivacifySectionHeader(
 	Row(
 		modifier = modifier
 			.fillMaxWidth()
-			.padding(horizontal = 4.dp, vertical = 8.dp),
+			.padding(horizontal = 4.dp, vertical = 4.dp),
 		horizontalArrangement = Arrangement.SpaceBetween,
 		verticalAlignment = Alignment.CenterVertically
 	) {

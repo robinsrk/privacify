@@ -51,7 +51,6 @@ fun AnalyticsScreen() {
 			PermissionDistributionCard(state)
 			RiskBreakdownCard(state)
 			HighRiskAppsCard(state)
-			Spacer(modifier = Modifier.height(8.dp))
 		}
 	}
 }

@@ -83,7 +83,7 @@ fun SettingsScreen(
 				.fillMaxSize()
 				.verticalScroll(rememberScrollState())
 				.padding(horizontal = 16.dp, vertical = 16.dp),
-			verticalArrangement = Arrangement.spacedBy(24.dp)
+			verticalArrangement = Arrangement.spacedBy(12.dp)
 		) {
 			Text(
 				text = "Settings",
@@ -118,7 +118,6 @@ fun SettingsScreen(
 			)
 			AboutSection()
 			Footer()
-			Spacer(modifier = Modifier.height(8.dp))
 		}
 	}
 }
@@ -189,7 +188,7 @@ private fun GeneralSection(
 	onScanFrequencyClick: () -> Unit,
 	onThemeClick: () -> Unit
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
 		PrivacifySectionHeader(title = "General")
 		PrivacifyCard {
 			Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
@@ -247,7 +246,7 @@ private fun AdvancedSection(
 	val shellOptions = listOf("Auto", "Root", "Shizuku")
 	var selectedOption by mutableStateOf(state.shellTypeLabel)
 	
-	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
 		Row(
 			modifier = Modifier.fillMaxWidth(),
 			horizontalArrangement = Arrangement.SpaceBetween,
@@ -399,7 +398,7 @@ private fun AdvancedSection(
 
 @Composable
 private fun AboutSection() {
-	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
 		PrivacifySectionHeader(title = "About")
 		PrivacifyCard {
 			Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {

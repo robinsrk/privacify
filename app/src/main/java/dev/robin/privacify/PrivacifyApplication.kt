@@ -35,6 +35,9 @@ class PrivacifyApplication : Application() {
 				try {
 					dev.robin.privacify.pro.utils.ShellUtils.shellTypePreference = type
 				} catch (_: Exception) {}
+				try {
+					dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
+				} catch (_: Exception) {}
 			}
 		}
 		
@@ -65,6 +68,11 @@ class PrivacifyApplication : Application() {
 		try {
 			Shizuku.addBinderReceivedListenerSticky {
 				Log.d(TAG, "Shizuku binder received")
+				CoroutineScope(Dispatchers.IO).launch {
+					try {
+						dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
+					} catch (_: Exception) {}
+				}
 				val prefs = UserPreferencesManager.getInstance(applicationContext)
 				if (prefs.shellType.value == "shizuku") {
 					val permission = Shizuku.checkSelfPermission()
@@ -81,6 +89,11 @@ class PrivacifyApplication : Application() {
 			
 			Shizuku.addBinderDeadListener {
 				Log.d(TAG, "Shizuku binder dead")
+				CoroutineScope(Dispatchers.IO).launch {
+					try {
+						dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
+					} catch (_: Exception) {}
+				}
 			}
 		} catch (e: Exception) {
 			Log.e(TAG, "Failed to setup Shizuku listener", e)

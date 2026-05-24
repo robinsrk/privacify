@@ -86,7 +86,7 @@ fun LockdownScreen(
 				)
 			}
 
-			Spacer(modifier = Modifier.height(24.dp))
+			Spacer(modifier = Modifier.height(16.dp))
 
 			// Panic button
 			PanicButton(
@@ -94,12 +94,12 @@ fun LockdownScreen(
 				onToggle = { viewModel.toggleLockdown() }
 			)
 
-			Spacer(modifier = Modifier.height(24.dp))
+			Spacer(modifier = Modifier.height(16.dp))
 
 			// Status
 			StatusBanner(active = state.lockdownActive)
 
-			Spacer(modifier = Modifier.height(24.dp))
+			Spacer(modifier = Modifier.height(16.dp))
 
 			// Sensor toggles
 			Text(
