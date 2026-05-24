@@ -19,3 +19,7 @@ privacify.png
 instructions.md
 logo.png
 .superpowers/
+robin_dev.jks
+build.sh
+*.apk
+*.aab
