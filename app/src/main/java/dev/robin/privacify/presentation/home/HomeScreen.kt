@@ -2,10 +2,11 @@ package dev.robin.privacify.presentation.home
 
 import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.ui.components.PrivacifyAutoGuardCard
 import dev.robin.privacify.ui.components.PrivacifyChip
+import dev.robin.privacify.ui.components.PrivacifyDivider
 import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
 import dev.robin.privacify.ui.components.PrivacifyIconBox
 import dev.robin.privacify.ui.components.PrivacifySectionHeader
@@ -169,7 +171,10 @@ private fun HeaderSection(
 	var animationPlayed by remember { mutableStateOf(false) }
 	val animatedScore by animateFloatAsState(
 		targetValue = if (animationPlayed) score / 100f else 0f,
-		animationSpec = tween(durationMillis = 1200),
+		animationSpec = spring(
+			stiffness = Spring.StiffnessLow,
+			dampingRatio = Spring.DampingRatioMediumBouncy
+		),
 		label = "scoreArc"
 	)
 	LaunchedEffect(Unit) { animationPlayed = true }
@@ -400,7 +405,7 @@ private fun QuickActionsSection(
 						enabled = state.isRooted,
 						onToggle = { onActionToggle(QuickAction.Lockdown) }
 					)
-					GradientDivider()
+					PrivacifyDivider(modifier = Modifier.padding(start = 52.dp))
 					QuickActionRow(
 						icon = Icons.Outlined.MicOff,
 						iconTint = RedVibrant,
@@ -413,7 +418,7 @@ private fun QuickActionsSection(
 						enabled = state.isRooted,
 						onToggle = { onActionToggle(QuickAction.MicKill) }
 					)
-					GradientDivider()
+					PrivacifyDivider(modifier = Modifier.padding(start = 52.dp))
 					QuickActionRow(
 						icon = Icons.Outlined.CameraAlt,
 						iconTint = OrangeVibrant,
@@ -481,31 +486,13 @@ private fun QuickActionRow(
 }
 
 @Composable
-private fun GradientDivider() {
-	Box(
-		modifier = Modifier
-			.fillMaxWidth()
-			.height(1.dp)
-			.padding(start = 68.dp, end = 16.dp)
-			.background(
-				Brush.horizontalGradient(
-					colors = listOf(
-						MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-						Color.Transparent
-					)
-				)
-			)
-	)
-}
-
-@Composable
 private fun ScanNowButton(
 	modifier: Modifier,
 	onClick: () -> Unit
 ) {
 	Button(
 		onClick = onClick,
-		shape = RoundedCornerShape(16.dp),
+		shape = MaterialTheme.shapes.large,
 		modifier = modifier.height(48.dp),
 		colors = ButtonDefaults.buttonColors(
 			containerColor = MaterialTheme.colorScheme.primary,
