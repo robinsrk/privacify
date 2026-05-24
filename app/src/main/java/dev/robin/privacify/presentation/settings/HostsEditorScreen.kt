@@ -3,6 +3,7 @@ package dev.robin.privacify.presentation.settings
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,19 +11,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -33,25 +35,24 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.theme.GreenVibrant
 
 @Composable
 fun HostsEditorScreen(
 	onBack: () -> Unit = {}
 ) {
+	val context = LocalContext.current
 	val viewModel: HostsEditorViewModel = viewModel(factory = HostsEditorViewModel.Factory)
 	val state by viewModel.state.collectAsState()
-	val context = LocalContext.current
 
 	LaunchedEffect(state.statusMessage) {
-		state.statusMessage?.let { msg ->
-			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+		state.statusMessage?.let {
+			Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
 			viewModel.clearStatusMessage()
 		}
 	}
@@ -65,7 +66,6 @@ fun HostsEditorScreen(
 				.fillMaxSize()
 				.padding(horizontal = 16.dp, vertical = 16.dp)
 		) {
-			// Header
 			Row(
 				modifier = Modifier.fillMaxWidth(),
 				verticalAlignment = Alignment.CenterVertically
@@ -77,104 +77,122 @@ fun HostsEditorScreen(
 					)
 				}
 				Spacer(modifier = Modifier.width(8.dp))
-				Column {
-					Text(
-						text = "Hosts Editor",
-						style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-					)
-					Text(
-						text = "/etc/hosts • Root Required",
-						style = MaterialTheme.typography.bodySmall,
-						color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-					)
-				}
-			}
-
-			Spacer(modifier = Modifier.height(16.dp))
-
-			// Quick add domain
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				OutlinedTextField(
-					value = state.newDomain,
-					onValueChange = { viewModel.onNewDomainChanged(it) },
-					modifier = Modifier.weight(1f),
-					shape = RoundedCornerShape(12.dp),
-					singleLine = true,
-					placeholder = { Text("Block a domain...") },
-					colors = OutlinedTextFieldDefaults.colors(
-						focusedBorderColor = MaterialTheme.colorScheme.primary,
-						unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-						focusedContainerColor = MaterialTheme.colorScheme.surface,
-						unfocusedContainerColor = MaterialTheme.colorScheme.surface
-					)
+				Text(
+					text = "Hosts Editor",
+					style = MaterialTheme.typography.titleLarge,
+					fontWeight = FontWeight.Black
 				)
-				Button(
-					onClick = { viewModel.addBlockRule() },
-					shape = RoundedCornerShape(12.dp),
-					colors = ButtonDefaults.buttonColors(
-						containerColor = Color(0xFFEF4444)
-					)
-				) {
-					Text("Block", fontWeight = FontWeight.Bold)
-				}
 			}
-
 			Spacer(modifier = Modifier.height(16.dp))
 
-			if (state.isLoading) {
+			PrivacifyExpressiveCard {
 				Column(
-					modifier = Modifier.fillMaxWidth().padding(top = 48.dp),
-					horizontalAlignment = Alignment.CenterHorizontally
-				) {
-					CircularProgressIndicator()
-					Spacer(modifier = Modifier.height(8.dp))
-					Text("Reading hosts file...", style = MaterialTheme.typography.bodySmall)
-				}
-			} else {
-				// Editor
-				OutlinedTextField(
-					value = state.content,
-					onValueChange = { viewModel.onContentChanged(it) },
 					modifier = Modifier
 						.fillMaxWidth()
-						.weight(1f),
-					shape = RoundedCornerShape(12.dp),
-					textStyle = MaterialTheme.typography.bodySmall.copy(
-						fontFamily = FontFamily.Monospace
-					),
-					colors = OutlinedTextFieldDefaults.colors(
-						focusedBorderColor = MaterialTheme.colorScheme.primary,
-						unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-						focusedContainerColor = MaterialTheme.colorScheme.surface,
-						unfocusedContainerColor = MaterialTheme.colorScheme.surface
-					)
-				)
-
-				Spacer(modifier = Modifier.height(12.dp))
-
-				Row(
-					modifier = Modifier.fillMaxWidth(),
-					horizontalArrangement = Arrangement.spacedBy(8.dp)
+						.padding(16.dp)
 				) {
-					OutlinedButton(
-						onClick = onBack,
-						modifier = Modifier.weight(1f),
-						shape = RoundedCornerShape(12.dp)
+					Text(
+						text = "Add Block Rule",
+						style = MaterialTheme.typography.titleMedium,
+						fontWeight = FontWeight.Black
+					)
+					Spacer(modifier = Modifier.height(8.dp))
+					Row(
+						modifier = Modifier.fillMaxWidth(),
+						horizontalArrangement = Arrangement.spacedBy(8.dp),
+						verticalAlignment = Alignment.CenterVertically
 					) {
-						Text("Cancel")
-					}
-					Button(
-						onClick = { viewModel.saveHosts() },
-						modifier = Modifier.weight(1f),
-						shape = RoundedCornerShape(12.dp)
-					) {
-						Text("Save", fontWeight = FontWeight.Bold)
+						OutlinedTextField(
+							value = state.newDomain,
+							onValueChange = { viewModel.onNewDomainChanged(it) },
+							modifier = Modifier.weight(1f),
+							shape = RoundedCornerShape(14.dp),
+							singleLine = true,
+							placeholder = { Text("domain.to.block") },
+							colors = OutlinedTextFieldDefaults.colors(
+								focusedBorderColor = MaterialTheme.colorScheme.primary,
+								unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+								focusedContainerColor = MaterialTheme.colorScheme.surface,
+								unfocusedContainerColor = MaterialTheme.colorScheme.surface
+							)
+						)
+						Button(
+							onClick = { viewModel.addBlockRule() },
+							shape = RoundedCornerShape(14.dp),
+							colors = ButtonDefaults.buttonColors(
+								containerColor = MaterialTheme.colorScheme.primary,
+								contentColor = MaterialTheme.colorScheme.onPrimary
+							)
+						) {
+							Icon(
+								imageVector = Icons.Outlined.Add,
+								contentDescription = null,
+								modifier = Modifier.size(18.dp)
+							)
+							Spacer(modifier = Modifier.width(4.dp))
+							Text(
+								text = "Add",
+								style = MaterialTheme.typography.labelLarge,
+								fontWeight = FontWeight.Black
+							)
+						}
 					}
 				}
+			}
+
+			Spacer(modifier = Modifier.height(16.dp))
+
+			Text(
+				text = "HOSTS CONTENT",
+				style = MaterialTheme.typography.labelMedium,
+				fontWeight = FontWeight.Black,
+				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+				modifier = Modifier.padding(start = 4.dp)
+			)
+			Spacer(modifier = Modifier.height(8.dp))
+
+			OutlinedTextField(
+				value = state.content,
+				onValueChange = { viewModel.onContentChanged(it) },
+				modifier = Modifier
+					.fillMaxWidth()
+					.weight(1f),
+				shape = RoundedCornerShape(16.dp),
+				textStyle = MaterialTheme.typography.bodySmall.copy(
+					fontWeight = FontWeight.Medium
+				),
+				colors = OutlinedTextFieldDefaults.colors(
+					focusedBorderColor = MaterialTheme.colorScheme.primary,
+					unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+					focusedContainerColor = MaterialTheme.colorScheme.surface,
+					unfocusedContainerColor = MaterialTheme.colorScheme.surface
+				)
+			)
+
+			Spacer(modifier = Modifier.height(12.dp))
+
+			Button(
+				onClick = { viewModel.saveHosts() },
+				modifier = Modifier
+					.fillMaxWidth()
+					.height(52.dp),
+				shape = RoundedCornerShape(16.dp),
+				colors = ButtonDefaults.buttonColors(
+					containerColor = GreenVibrant,
+					contentColor = MaterialTheme.colorScheme.onPrimary
+				)
+			) {
+				Icon(
+					imageVector = Icons.Outlined.Save,
+					contentDescription = null,
+					modifier = Modifier.size(18.dp)
+				)
+				Spacer(modifier = Modifier.width(8.dp))
+				Text(
+					text = "Save Changes",
+					style = MaterialTheme.typography.labelLarge,
+					fontWeight = FontWeight.Black
+				)
 			}
 		}
 	}

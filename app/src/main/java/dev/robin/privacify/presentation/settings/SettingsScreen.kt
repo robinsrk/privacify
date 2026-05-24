@@ -14,58 +14,51 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdminPanelSettings
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Radar
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.robin.privacify.ui.components.PrivacifyCard
+import dev.robin.privacify.ui.components.PrivacifyAutoGuardCard
+import dev.robin.privacify.ui.components.PrivacifyBadge
 import dev.robin.privacify.ui.components.PrivacifyChip
-import dev.robin.privacify.ui.components.PrivacifyDivider
+import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.components.PrivacifyIconBox
 import dev.robin.privacify.ui.components.PrivacifySectionHeader
+import dev.robin.privacify.ui.components.PrivacifyStatusIndicator
 import dev.robin.privacify.ui.components.PrivacifySwitch
 import dev.robin.privacify.ui.components.PrivacifyWarningBanner
-import dev.robin.privacify.ui.theme.BluePrimary
-import dev.robin.privacify.ui.theme.Purple500
-import dev.robin.privacify.ui.theme.Red500
+import dev.robin.privacify.ui.theme.AutoGuardPrimary
+import dev.robin.privacify.ui.theme.BlueVibrant
+import dev.robin.privacify.ui.theme.GreenVibrant
+import dev.robin.privacify.ui.theme.PurpleVibrant
+import dev.robin.privacify.ui.theme.RedVibrant
 
 @Composable
-fun SettingsScreen(
-	onNavigateToHosts: () -> Unit = {}
-) {
+fun SettingsScreen() {
 	val context = LocalContext.current
 	val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(context))
 	val state by viewModel.state.collectAsState()
@@ -82,43 +75,69 @@ fun SettingsScreen(
 			modifier = Modifier
 				.fillMaxSize()
 				.verticalScroll(rememberScrollState())
-				.padding(horizontal = 16.dp, vertical = 16.dp),
-			verticalArrangement = Arrangement.spacedBy(12.dp)
+				.padding(horizontal = 16.dp),
+			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
+			Spacer(modifier = Modifier.height(8.dp))
+
 			Text(
 				text = "Settings",
-				style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold)
+				style = MaterialTheme.typography.headlineLarge,
+				fontWeight = FontWeight.Black,
+				modifier = Modifier.padding(horizontal = 4.dp)
 			)
+
+			ProtectionSection(
+				enabled = state.automationEnabled,
+				onToggle = viewModel::onAutomationChanged
+			)
+
 			GeneralSection(
 				state = state,
 				onNotificationsChanged = viewModel::onNotificationsChanged,
 				onScanFrequencyClick = viewModel::onScanFrequencyClicked,
 				onThemeClick = viewModel::onThemeClicked
 			)
-			AdvancedSection(
+		AdvancedSection(
 				context = context,
 				state = state,
-				onAutomationChanged = viewModel::onAutomationChanged,
-				onEditHostsClicked = viewModel::onEditHostsClicked,
 				onShellTypeChange = viewModel::setShellType,
 				onRefreshShizuku = { viewModel.refreshShizukuStatus(context) },
-				onRequestShizukuPermission = { viewModel.requestShizukuPermission() },
-				onRequestShizukuAutoStart = { viewModel.requestShizukuAutoStart(context) },
-				onOpenShizuku = {
-					try {
-						val intent = context.packageManager.getLaunchIntentForPackage("rikka.shizuku.privileged.api")
-						if (intent != null) {
-							intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-							context.startActivity(intent)
-						}
-					} catch (e: Exception) {
-						android.util.Log.e("SettingsScreen", "Failed to open Shizuku", e)
-					}
-				}
+				onRequestShizukuPermission = { viewModel.requestShizukuPermission() }
 			)
 			AboutSection()
 			Footer()
+
+			Spacer(modifier = Modifier.height(16.dp))
 		}
+	}
+}
+
+@Composable
+private fun ProtectionSection(
+	enabled: Boolean,
+	onToggle: (Boolean) -> Unit
+) {
+	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 4.dp),
+			horizontalArrangement = Arrangement.SpaceBetween,
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Text(
+				text = "PROTECTION",
+				style = MaterialTheme.typography.labelMedium,
+				fontWeight = FontWeight.Black,
+				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+			)
+			PrivacifyBadge(text = "FEATURED", color = AutoGuardPrimary)
+		}
+		PrivacifyAutoGuardCard(
+			enabled = enabled,
+			onToggle = onToggle
+		)
 	}
 }
 
@@ -126,59 +145,68 @@ fun SettingsScreen(
 private fun SettingsRow(
 	title: String,
 	subtitle: String? = null,
-	icon: androidx.compose.ui.graphics.vector.ImageVector,
-	iconTint: androidx.compose.ui.graphics.Color,
-	iconBackground: androidx.compose.ui.graphics.Color,
+	icon: ImageVector,
+	iconTint: Color,
+	iconBackground: Color,
 	onClick: (() -> Unit)? = null,
 	trailing: @Composable (() -> Unit)? = null
 ) {
-	PrivacifyCard(onClick = onClick) {
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(16.dp),
-			horizontalArrangement = Arrangement.SpaceBetween,
-			verticalAlignment = Alignment.CenterVertically
-		) {
-			Row(
-				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier.weight(1f)
-			) {
-				Box(
-					modifier = Modifier
-						.size(40.dp)
-						.clip(RoundedCornerShape(12.dp))
-						.background(iconBackground),
-					contentAlignment = Alignment.Center
-				) {
-					Icon(
-						imageVector = icon,
-						contentDescription = null,
-						tint = iconTint,
-						modifier = Modifier.size(20.dp)
-					)
-				}
-				Spacer(modifier = Modifier.width(12.dp))
-				Column {
-					Text(
-						text = title,
-						style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-					)
-					if (subtitle != null) {
-						Spacer(modifier = Modifier.height(2.dp))
-						Text(
-							text = subtitle,
-							style = MaterialTheme.typography.bodySmall,
-							color = MaterialTheme.colorScheme.onSurfaceVariant
-						)
-					}
-				}
-			}
-			if (trailing != null) {
-				trailing()
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.then(
+				if (onClick != null) Modifier.clickable { onClick() }
+				else Modifier
+			)
+			.padding(horizontal = 16.dp, vertical = 14.dp),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		PrivacifyIconBox(
+			icon = icon,
+			tint = iconTint,
+			background = iconBackground,
+			size = 48,
+			iconSize = 24
+		)
+		Spacer(modifier = Modifier.width(16.dp))
+		Column(modifier = Modifier.weight(1f)) {
+			Text(
+				text = title,
+				style = MaterialTheme.typography.titleMedium,
+				fontWeight = FontWeight.Bold
+			)
+			if (subtitle != null) {
+				Spacer(modifier = Modifier.height(2.dp))
+				Text(
+					text = subtitle,
+					style = MaterialTheme.typography.bodyMedium,
+					color = MaterialTheme.colorScheme.onSurfaceVariant
+				)
 			}
 		}
+		if (trailing != null) {
+			Spacer(modifier = Modifier.width(12.dp))
+			trailing()
+		}
 	}
+}
+
+@Composable
+private fun GradientDivider() {
+	Box(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(1.dp)
+			.padding(start = 72.dp, end = 16.dp)
+			.background(
+				Brush.horizontalGradient(
+					colors = listOf(
+						MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+						Color.Transparent
+					)
+				)
+			)
+	)
 }
 
 @Composable
@@ -188,17 +216,16 @@ private fun GeneralSection(
 	onScanFrequencyClick: () -> Unit,
 	onThemeClick: () -> Unit
 ) {
-	Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		PrivacifySectionHeader(title = "General")
-		PrivacifyCard {
+		PrivacifyExpressiveCard {
 			Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
 				SettingsRow(
 					title = "Notifications",
-					subtitle = "Manage alerts & sounds",
+					subtitle = "Receive alerts when sensors are accessed",
 					icon = Icons.Outlined.Notifications,
-					iconTint = BluePrimary,
-					iconBackground = BluePrimary.copy(alpha = 0.15f),
-					onClick = { onNotificationsChanged(!state.notificationsEnabled) },
+					iconTint = BlueVibrant,
+					iconBackground = BlueVibrant.copy(alpha = 0.12f),
 					trailing = {
 						PrivacifySwitch(
 							checked = state.notificationsEnabled,
@@ -206,16 +233,16 @@ private fun GeneralSection(
 						)
 					}
 				)
-				PrivacifyDivider()
+				GradientDivider()
 				SettingsRow(
 					title = "Scan Frequency",
 					subtitle = state.scanFrequencyLabel,
 					icon = Icons.Outlined.Radar,
-					iconTint = Purple500,
-					iconBackground = Purple500.copy(alpha = 0.15f),
+					iconTint = PurpleVibrant,
+					iconBackground = PurpleVibrant.copy(alpha = 0.12f),
 					onClick = onScanFrequencyClick
 				)
-				PrivacifyDivider()
+				GradientDivider()
 				SettingsRow(
 					title = "App Theme",
 					subtitle = state.themeLabel,
@@ -229,139 +256,127 @@ private fun GeneralSection(
 	}
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdvancedSection(
 	context: android.content.Context,
 	state: SettingsUiState,
-	onAutomationChanged: (Boolean) -> Unit,
-	onEditHostsClicked: () -> Unit,
 	onShellTypeChange: (String) -> Unit,
 	onRefreshShizuku: () -> Unit,
-	onOpenShizuku: () -> Unit,
-	onRequestShizukuPermission: () -> Unit,
-	onRequestShizukuAutoStart: () -> Unit
+	onRequestShizukuPermission: () -> Unit
 ) {
-	var expanded by mutableStateOf(false)
 	val shellOptions = listOf("Auto", "Root", "Shizuku")
-	var selectedOption by mutableStateOf(state.shellTypeLabel)
-	
-	Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+
+	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Row(
-			modifier = Modifier.fillMaxWidth(),
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 4.dp),
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.CenterVertically
 		) {
-			PrivacifySectionHeader(title = "Advanced")
-			PrivacifyChip(text = "Root/Shizuku", color = Purple500)
+			Text(
+				text = "ADVANCED",
+				style = MaterialTheme.typography.labelMedium,
+				fontWeight = FontWeight.Black,
+				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+			)
+			Row(
+				horizontalArrangement = Arrangement.spacedBy(8.dp),
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				if (state.shizukuStatus.isNotEmpty()) {
+					val statusColor = when {
+						state.shizukuStatus == "Ready" -> GreenVibrant
+						state.shizukuStatus == "Unknown" -> MaterialTheme.colorScheme.onSurfaceVariant
+						else -> RedVibrant
+					}
+					PrivacifyStatusIndicator(
+						status = state.shizukuStatus,
+						color = statusColor
+					)
+				}
+				PrivacifyChip(text = "Root/Shizuku", color = PurpleVibrant)
+			}
 		}
-		PrivacifyCard {
+
+		PrivacifyExpressiveCard {
 			Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
 				Box(
 					modifier = Modifier
 						.fillMaxWidth()
-						.padding(horizontal = 16.dp, vertical = 12.dp)
+						.padding(horizontal = 16.dp, vertical = 14.dp)
 				) {
-					ExposedDropdownMenuBox(
-						expanded = expanded,
-						onExpandedChange = { expanded = !expanded }
+					Row(
+						verticalAlignment = Alignment.CenterVertically,
+						horizontalArrangement = Arrangement.spacedBy(12.dp)
 					) {
-						OutlinedTextField(
-							value = selectedOption,
-							onValueChange = {},
-							readOnly = true,
-							label = { Text("Shell Type") },
-							leadingIcon = {
-								Icon(
-									imageVector = Icons.Outlined.Terminal,
-									contentDescription = null
-								)
-							},
-							trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-							colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-							modifier = Modifier
-								.menuAnchor()
-								.fillMaxWidth()
+						PrivacifyIconBox(
+							icon = Icons.Outlined.Terminal,
+							tint = PurpleVibrant,
+							background = PurpleVibrant.copy(alpha = 0.12f),
+							size = 48,
+							iconSize = 24
 						)
-						ExposedDropdownMenu(
-							expanded = expanded,
-							onDismissRequest = { expanded = false }
-						) {
-							shellOptions.forEach { option ->
-								DropdownMenuItem(
-									text = {
+						Column(modifier = Modifier.weight(1f)) {
+							Text(
+								text = "Shell Type",
+								style = MaterialTheme.typography.titleMedium,
+								fontWeight = FontWeight.Bold
+							)
+							Spacer(modifier = Modifier.height(6.dp))
+							Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+								shellOptions.forEach { option ->
+									val isSelected = option == state.shellTypeLabel
+									Box(
+										modifier = Modifier
+											.clip(MaterialTheme.shapes.small)
+											.background(
+												if (isSelected) PurpleVibrant
+												else MaterialTheme.colorScheme.surfaceVariant
+											)
+											.clickable {
+												val newValue = when (option) {
+													"Root" -> "root"
+													"Shizuku" -> "shizuku"
+													else -> "auto"
+												}
+												onShellTypeChange(newValue)
+												if (option == "Shizuku" && state.shizukuStatus != "Ready") {
+													onRequestShizukuPermission()
+												}
+												onRefreshShizuku()
+											}
+											.padding(horizontal = 16.dp, vertical = 8.dp)
+									) {
 										Text(
 											text = option,
-											fontWeight = if (option == selectedOption) FontWeight.Bold else FontWeight.Normal
+											style = MaterialTheme.typography.labelLarge,
+											fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+											color = if (isSelected) Color.White
+											else MaterialTheme.colorScheme.onSurfaceVariant
 										)
-									},
-									onClick = {
-										selectedOption = option
-										val newValue = when (option) {
-											"Root" -> "root"
-											"Shizuku" -> "shizuku"
-											else -> "auto"
-										}
-										onShellTypeChange(newValue)
-										expanded = false
-										if (option == "Shizuku" && state.shizukuStatus != "Ready") {
-											onRequestShizukuPermission()
-										}
-										onRefreshShizuku()
 									}
-								)
+								}
 							}
 						}
 					}
 				}
-				PrivacifyDivider()
-				SettingsRow(
-					title = "Shizuku Auto-Start",
-					subtitle = "Start Shizuku on boot",
-					icon = Icons.Outlined.AutoAwesome,
-					iconTint = Purple500,
-					iconBackground = Purple500.copy(alpha = 0.15f),
-					onClick = {
-						if (!state.shizukuAutoStart) {
-							onRequestShizukuAutoStart()
-						}
-					},
-					trailing = {
-						PrivacifySwitch(
-							checked = state.shizukuAutoStart,
-							onCheckedChange = {
-								if (it) onRequestShizukuAutoStart()
-							}
-						)
-					}
-				)
-			}
+				}
 		}
-		PrivacifyWarningBanner(text = "Features in this section require granted SU or Shizuku privileges.")
-		PrivacifyCard {
+
+		PrivacifyWarningBanner(
+			text = "Root or Shizuku privileges required for advanced features."
+		)
+
+		PrivacifyExpressiveCard {
 			Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-				SettingsRow(
-					title = "Auto-Guard",
-					subtitle = "Pause kill-switches when in use",
-					icon = Icons.Outlined.AutoAwesome,
-					iconTint = MaterialTheme.colorScheme.secondary,
-					iconBackground = MaterialTheme.colorScheme.secondaryContainer,
-					onClick = { onAutomationChanged(!state.automationEnabled) },
-					trailing = {
-						PrivacifySwitch(
-							checked = state.automationEnabled,
-							onCheckedChange = onAutomationChanged
-						)
-					}
-				)
 				if (state.automationEnabled) {
-					PrivacifyDivider()
 					SettingsRow(
 						title = "Battery Optimization",
-						subtitle = "Tap to disable for reliable operation",
+						subtitle = "Disable for reliable background operation",
 						icon = Icons.Outlined.Shield,
-						iconTint = Purple500,
-						iconBackground = Purple500.copy(alpha = 0.15f),
+						iconTint = PurpleVibrant,
+						iconBackground = PurpleVibrant.copy(alpha = 0.12f),
 						onClick = {
 							try {
 								val intent = android.content.Intent().apply {
@@ -381,16 +396,7 @@ private fun AdvancedSection(
 							}
 						}
 					)
-				}
-				PrivacifyDivider()
-				SettingsRow(
-					title = "Edit Hosts File",
-					subtitle = "/etc/hosts direct write",
-					icon = Icons.Outlined.Dns,
-					iconTint = BluePrimary,
-					iconBackground = BluePrimary.copy(alpha = 0.15f),
-					onClick = onEditHostsClicked
-				)
+					}
 			}
 		}
 	}
@@ -398,9 +404,9 @@ private fun AdvancedSection(
 
 @Composable
 private fun AboutSection() {
-	Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		PrivacifySectionHeader(title = "About")
-		PrivacifyCard {
+		PrivacifyExpressiveCard {
 			Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
 				SettingsRow(
 					title = "Open Source",
@@ -409,14 +415,14 @@ private fun AboutSection() {
 					iconTint = MaterialTheme.colorScheme.primary,
 					iconBackground = MaterialTheme.colorScheme.primaryContainer
 				)
-				PrivacifyDivider()
+				GradientDivider()
 				SettingsRow(
 					title = "Privacy Policy",
 					icon = Icons.Outlined.Policy,
 					iconTint = MaterialTheme.colorScheme.secondary,
 					iconBackground = MaterialTheme.colorScheme.secondaryContainer
 				)
-				PrivacifyDivider()
+				GradientDivider()
 				SettingsRow(
 					title = "Version",
 					subtitle = "1.0.0",
@@ -436,16 +442,10 @@ private fun Footer() {
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		Text(
-			text = "Privacy Control Center © 2025",
+			text = "Privacify Control Center",
 			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+			color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
 		)
-		Spacer(modifier = Modifier.height(8.dp))
-		Text(
-			text = "Sign Out",
-			style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-			color = Red500,
-			modifier = Modifier.clickable {}
-		)
+
 	}
 }
