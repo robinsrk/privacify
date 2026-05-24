@@ -4,7 +4,7 @@ plugins {
 }
 
 val isProBuild = gradle.startParameter.taskNames.any { task ->
-	task.contains("ProRelease", ignoreCase = true)
+	task.contains("Pro", ignoreCase = true)
 }
 
 android {
@@ -73,6 +73,12 @@ tasks.register("assembleProRelease") {
 	dependsOn("assembleRelease")
 	description = "Assembles a release build with Pro features (root/Shizuku hardware controls)"
 	group = "build"
+}
+
+tasks.register("installProDebug") {
+	dependsOn("installDebug")
+	description = "Builds and installs debug APK with Pro features"
+	group = "install"
 }
 
 dependencies {
