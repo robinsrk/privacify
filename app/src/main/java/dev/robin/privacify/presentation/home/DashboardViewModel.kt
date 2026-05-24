@@ -127,6 +127,9 @@ class DashboardViewModel(
 					current.copy(lockdownEnabled = true)
 				}
 			}
+			dev.robin.privacify.core.widget.LockdownWidgetProvider.updateAllWidgets(
+				dev.robin.privacify.core.utils.AppContextProvider.context
+			)
 		}
 	}
 

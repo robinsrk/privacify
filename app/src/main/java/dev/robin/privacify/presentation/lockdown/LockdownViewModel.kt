@@ -6,10 +6,14 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.robin.privacify.core.security.PrivacyControllersProvider
+import dev.robin.privacify.core.utils.AppContextProvider
 import dev.robin.privacify.domain.lockdown.LockdownUseCase
 import dev.robin.privacify.domain.root.RootPrivacyController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -50,6 +54,7 @@ class LockdownViewModel(
 			} else {
 				lockdownUseCase.disableLockdown()
 			}
+			dev.robin.privacify.core.widget.LockdownWidgetProvider.updateAllWidgets(AppContextProvider.context)
 		}
 	}
 
