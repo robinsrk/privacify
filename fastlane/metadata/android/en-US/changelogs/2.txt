@@ -1,0 +1,10 @@
+- Redesigned UI with Material 3 Expressive theme
+- Quick Settings tile for lockdown toggle
+- Home screen widget for lockdown toggle
+- Pro dialog with Patreon support link
+- Dynamic version display in Settings
+- Open source link in About section
+- Auto-Guard and App Autostart gated behind Pro dialog
+- Unused permissions removed (CAMERA, RECORD_AUDIO, READ_PHONE_STATE)
+- Unused dependencies removed
+- Updated F-Droid images and fastlane metadata
