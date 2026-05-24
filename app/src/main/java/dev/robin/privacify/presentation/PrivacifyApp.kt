@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -76,7 +77,7 @@ private fun MainNavigationShell() {
 			if (showBottomBar) {
 				NavigationBar(
 					containerColor = MaterialTheme.colorScheme.surface,
-					tonalElevation = 0.dp
+					tonalElevation = 4.dp
 				) {
 					destinations.forEach { destination ->
 						val selected = currentRoute == destination.route
@@ -101,7 +102,7 @@ private fun MainNavigationShell() {
 								Text(
 									text = stringResource(destination.labelRes),
 									style = MaterialTheme.typography.labelSmall.copy(
-										fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+										fontWeight = if (selected) FontWeight.Black else FontWeight.Medium
 									)
 								)
 							},
@@ -144,11 +145,7 @@ private fun MainNavigationShell() {
 					AnalyticsScreen()
 				}
 				composable(BottomNavDestination.SettingsDestination.route) {
-					SettingsScreen(
-						onNavigateToHosts = {
-							navController.navigate("hosts_editor")
-						}
-					)
+					SettingsScreen()
 				}
 				composable("app_detail/{packageName}") { backStackEntry ->
 					val packageName = backStackEntry.arguments?.getString("packageName") ?: ""
@@ -168,4 +165,3 @@ private fun MainNavigationShell() {
 		}
 	}
 }
-

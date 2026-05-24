@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.ui.graphics.vector.ImageVector
 import dev.robin.privacify.R
 
@@ -47,4 +48,3 @@ sealed class BottomNavDestination(
 		)
 	}
 }
-
