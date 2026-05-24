@@ -38,15 +38,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.domain.apps.AppRiskLevel
+import dev.robin.privacify.ui.components.PrivacifyBadge
+import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.components.PrivacifyIconBox
+import dev.robin.privacify.ui.theme.GreenVibrant
+import dev.robin.privacify.ui.theme.OrangeVibrant
+import dev.robin.privacify.ui.theme.RedVibrant
 
 
 data class PermissionDetail(
@@ -69,7 +77,7 @@ fun AppDetailRoute(
 	packageName: String
 ) {
 	val context = LocalContext.current
-	val viewModel: AppDetailViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+	val viewModel: AppDetailViewModel = viewModel(
 		factory = AppDetailViewModel.factory(packageName, context)
 	)
 	val app by viewModel.state.collectAsState()
@@ -127,9 +135,9 @@ private fun AppDetailScreen(
 	onAction: (String) -> Unit
 ) {
 	val riskColor = when (app.riskLevel) {
-		AppRiskLevel.High -> Color(0xFFEF4444)
-		AppRiskLevel.Medium -> Color(0xFFF97316)
-		AppRiskLevel.Low -> Color(0xFF10B981)
+		AppRiskLevel.High -> RedVibrant
+		AppRiskLevel.Medium -> OrangeVibrant
+		AppRiskLevel.Low -> GreenVibrant
 	}
 
 	Surface(
@@ -140,16 +148,13 @@ private fun AppDetailScreen(
 			modifier = Modifier
 				.fillMaxSize()
 				.verticalScroll(rememberScrollState())
-				.padding(horizontal = 16.dp, vertical = 16.dp)
+				.padding(horizontal = 16.dp, vertical = 16.dp),
+			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
 			Header(app, riskColor)
-			Spacer(modifier = Modifier.height(16.dp))
-			ActivityInsights(app, riskColor)
-			Spacer(modifier = Modifier.height(16.dp))
+			ActivityInsights(app)
 			PermissionsSection(app)
-			Spacer(modifier = Modifier.height(16.dp))
 			AdvancedControls(isRooted = isRooted, onAction = onAction)
-			Spacer(modifier = Modifier.height(16.dp))
 		}
 	}
 }
@@ -172,55 +177,50 @@ private fun Header(
 		) {
 			Text(
 				text = app.appName.firstOrNull()?.uppercase() ?: "",
-				style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+				style = MaterialTheme.typography.headlineMedium,
+				fontWeight = FontWeight.Black,
 				color = riskColor
 			)
 		}
 		Text(
 			text = app.appName,
-			style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+			style = MaterialTheme.typography.titleLarge,
+			fontWeight = FontWeight.Black
 		)
 		Spacer(modifier = Modifier.height(4.dp))
 		Text(
 			text = app.packageName,
 			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+			textAlign = TextAlign.Center
 		)
 		Spacer(modifier = Modifier.height(8.dp))
-		Box(
-			modifier = Modifier
-				.clip(RoundedCornerShape(999.dp))
-				.background(riskColor.copy(alpha = 0.12f))
-				.padding(horizontal = 12.dp, vertical = 6.dp)
-		) {
-			Text(
-				text = when (app.riskLevel) {
-					AppRiskLevel.High -> "High Risk App"
-					AppRiskLevel.Medium -> "Medium Risk App"
-					AppRiskLevel.Low -> "Low Risk App"
-				},
-				style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-				color = riskColor
-			)
-		}
+		PrivacifyBadge(
+			text = when (app.riskLevel) {
+				AppRiskLevel.High -> "High Risk App"
+				AppRiskLevel.Medium -> "Medium Risk App"
+				AppRiskLevel.Low -> "Low Risk App"
+			},
+			color = riskColor
+		)
 	}
 }
 
 @Composable
 private fun ActivityInsights(
-	app: AppDetailInfo,
-	riskColor: Color
+	app: AppDetailInfo
 ) {
 	Column(modifier = Modifier.fillMaxWidth()) {
 		Text(
 			text = "ACTIVITY INSIGHTS",
-			style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+			style = MaterialTheme.typography.labelMedium,
+			fontWeight = FontWeight.Black,
 			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 			modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
 		)
 		Row(
 			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(8.dp)
+			horizontalArrangement = Arrangement.spacedBy(12.dp)
 		) {
 			InsightCard(
 				title = "${app.grantedCount}/${app.totalCount}",
@@ -246,22 +246,24 @@ private fun InsightCard(
 	subtitle: String,
 	modifier: Modifier = Modifier
 ) {
-	Column(
+	PrivacifyExpressiveCard(
 		modifier = modifier
-			.clip(RoundedCornerShape(20.dp))
-			.background(MaterialTheme.colorScheme.surface)
-			.padding(16.dp)
 	) {
-		Text(
-			text = title,
-			style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-		)
-		Spacer(modifier = Modifier.height(4.dp))
-		Text(
-			text = subtitle,
-			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onSurfaceVariant
-		)
+		Column(
+			modifier = Modifier.padding(16.dp)
+		) {
+			Text(
+				text = title,
+				style = MaterialTheme.typography.titleLarge,
+				fontWeight = FontWeight.Black
+			)
+			Spacer(modifier = Modifier.height(4.dp))
+			Text(
+				text = subtitle,
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		}
 	}
 }
 
@@ -272,44 +274,49 @@ private fun PermissionsSection(
 	Column(modifier = Modifier.fillMaxWidth()) {
 		Text(
 			text = "PERMISSIONS (${app.grantedCount} granted of ${app.totalCount})",
-			style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+			style = MaterialTheme.typography.labelMedium,
+			fontWeight = FontWeight.Black,
 			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 			modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
 		)
-		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(RoundedCornerShape(20.dp))
-				.background(MaterialTheme.colorScheme.surface)
-		) {
-			if (app.permissions.isEmpty()) {
-				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(24.dp),
-					contentAlignment = Alignment.Center
-				) {
-					Text(
-						text = "No sensitive permissions detected",
-						style = MaterialTheme.typography.bodySmall,
-						color = MaterialTheme.colorScheme.onSurfaceVariant
-					)
-				}
-			}
-			app.permissions.forEachIndexed { index, perm ->
-				PermissionRow(
-					title = perm.name,
-					description = perm.description,
-					isGranted = perm.isGranted
-				)
-				if (index < app.permissions.lastIndex) {
+		PrivacifyExpressiveCard {
+			Column {
+				if (app.permissions.isEmpty()) {
 					Box(
 						modifier = Modifier
 							.fillMaxWidth()
-							.padding(horizontal = 16.dp)
-							.height(1.dp)
-							.background(MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+							.padding(24.dp),
+						contentAlignment = Alignment.Center
+					) {
+						Text(
+							text = "No sensitive permissions detected",
+							style = MaterialTheme.typography.bodySmall,
+							color = MaterialTheme.colorScheme.onSurfaceVariant
+						)
+					}
+				}
+				app.permissions.forEachIndexed { index, perm ->
+					PermissionRow(
+						title = perm.name,
+						description = perm.description,
+						isGranted = perm.isGranted
 					)
+					if (index < app.permissions.lastIndex) {
+						Box(
+							modifier = Modifier
+								.fillMaxWidth()
+								.padding(start = 72.dp, end = 16.dp)
+								.height(1.dp)
+								.background(
+									Brush.horizontalGradient(
+										listOf(
+											MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+											Color.Transparent
+										)
+									)
+								)
+						)
+					}
 				}
 			}
 		}
@@ -326,13 +333,13 @@ private fun PermissionRow(
 		modifier = Modifier
 			.fillMaxWidth()
 			.padding(horizontal = 16.dp, vertical = 12.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.SpaceBetween
+		verticalAlignment = Alignment.CenterVertically
 	) {
 		Column(modifier = Modifier.weight(1f)) {
 			Text(
 				text = title,
-				style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+				style = MaterialTheme.typography.bodyMedium,
+				fontWeight = FontWeight.Bold,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis
 			)
@@ -347,15 +354,16 @@ private fun PermissionRow(
 			modifier = Modifier
 				.clip(CircleShape)
 				.background(
-					if (isGranted) Color(0xFFEF4444).copy(alpha = 0.12f)
-					else Color(0xFF10B981).copy(alpha = 0.12f)
+					if (isGranted) RedVibrant.copy(alpha = 0.12f)
+					else GreenVibrant.copy(alpha = 0.12f)
 				)
 				.padding(horizontal = 12.dp, vertical = 6.dp)
 		) {
 			Text(
 				text = if (isGranted) "Granted" else "Denied",
-				style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-				color = if (isGranted) Color(0xFFEF4444) else Color(0xFF10B981)
+				style = MaterialTheme.typography.labelSmall,
+				fontWeight = FontWeight.Bold,
+				color = if (isGranted) RedVibrant else GreenVibrant
 			)
 		}
 	}
@@ -373,16 +381,16 @@ private fun AdvancedControls(
 	if (showConfirmDialog) {
 		AlertDialog(
 			onDismissRequest = { showConfirmDialog = false },
-			title = { Text("Confirm Root Action") },
+			title = { Text("Confirm Root Action", fontWeight = FontWeight.Black) },
 			text = { Text("This action requires root privileges and may affect system stability. Are you sure you want to $pendingAction?") },
 			confirmButton = {
 				TextButton(
-					onClick = { 
-						showConfirmDialog = false 
+					onClick = {
+						showConfirmDialog = false
 						onAction(pendingActionId)
 					}
 				) {
-					Text("Execute", color = Color(0xFFEF4444))
+					Text("Execute", color = RedVibrant, fontWeight = FontWeight.Black)
 				}
 			},
 			dismissButton = {
@@ -403,8 +411,9 @@ private fun AdvancedControls(
 		) {
 			Text(
 				text = "ADVANCED CONTROLS",
-				style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-				color = Color(0xFFEF4444)
+				style = MaterialTheme.typography.labelMedium,
+				fontWeight = FontWeight.Black,
+				color = RedVibrant
 			)
 			Row(
 				verticalAlignment = Alignment.CenterVertically,
@@ -414,20 +423,19 @@ private fun AdvancedControls(
 					modifier = Modifier
 						.size(8.dp)
 						.clip(CircleShape)
-						.background(Color(0xFFEF4444))
+						.background(RedVibrant)
 				)
 				Text(
 					text = "ROOT ONLY",
-					style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-					color = Color(0xFFEF4444)
+					style = MaterialTheme.typography.labelSmall,
+					fontWeight = FontWeight.Black,
+					color = RedVibrant
 				)
 			}
 		}
 		Spacer(modifier = Modifier.height(8.dp))
-		val alpha = if (isRooted) 1f else 0.45f
 		Column(
-			verticalArrangement = Arrangement.spacedBy(8.dp),
-			modifier = Modifier.then(if (!isRooted) Modifier.padding(0.dp) else Modifier)
+			verticalArrangement = Arrangement.spacedBy(8.dp)
 		) {
 			AdvancedActionCard(
 				icon = Icons.Outlined.Block,
@@ -478,31 +486,25 @@ private fun AdvancedActionCard(
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clip(RoundedCornerShape(16.dp))
-			.background(Color(0xFFEF4444).copy(alpha = 0.06f * alpha))
+			.clip(RoundedCornerShape(20.dp))
+			.background(RedVibrant.copy(alpha = 0.06f * alpha))
 			.clickable(enabled = enabled) { onClick() }
 			.padding(horizontal = 16.dp, vertical = 12.dp),
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.spacedBy(12.dp)
 	) {
-		Box(
-			modifier = Modifier
-				.size(40.dp)
-				.clip(RoundedCornerShape(12.dp))
-				.background(Color(0xFFEF4444).copy(alpha = 0.12f)),
-			contentAlignment = Alignment.Center
-		) {
-			Icon(
-				imageVector = icon,
-				contentDescription = null,
-				tint = Color(0xFFEF4444),
-				modifier = Modifier.size(20.dp)
-			)
-		}
+		PrivacifyIconBox(
+			icon = icon,
+			tint = RedVibrant,
+			background = RedVibrant.copy(alpha = 0.12f),
+			size = 40,
+			iconSize = 20
+		)
 		Column(modifier = Modifier.weight(1f)) {
 			Text(
 				text = title,
-				style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+				style = MaterialTheme.typography.bodyMedium,
+				fontWeight = FontWeight.Black
 			)
 			Spacer(modifier = Modifier.height(2.dp))
 			Text(
@@ -514,13 +516,14 @@ private fun AdvancedActionCard(
 		Box(
 			modifier = Modifier
 				.clip(RoundedCornerShape(999.dp))
-				.background(Color(0xFFEF4444).copy(alpha = 0.12f))
+				.background(RedVibrant.copy(alpha = 0.12f))
 				.padding(horizontal = 12.dp, vertical = 6.dp)
 		) {
 			Text(
 				text = "Action",
-				style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-				color = Color(0xFFEF4444)
+				style = MaterialTheme.typography.labelSmall,
+				fontWeight = FontWeight.Black,
+				color = RedVibrant
 			)
 		}
 	}

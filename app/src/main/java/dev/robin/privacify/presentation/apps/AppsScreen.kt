@@ -1,5 +1,6 @@
 package dev.robin.privacify.presentation.apps
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -40,6 +42,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.domain.apps.AppPrivacyInfo
 import dev.robin.privacify.domain.apps.AppRiskLevel
+import dev.robin.privacify.ui.components.PrivacifyBadge
+import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.theme.GreenVibrant
+import dev.robin.privacify.ui.theme.OrangeVibrant
+import dev.robin.privacify.ui.theme.RedVibrant
 
 @Composable
 fun AppsScreen(
@@ -61,16 +68,21 @@ fun AppsScreen(
 			Column(
 				modifier = Modifier.padding(horizontal = 16.dp)
 			) {
-				Text(
-					text = "Permission Risk Scanner",
-					style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
-				)
-				Spacer(modifier = Modifier.height(4.dp))
-				Text(
-					text = "Scanning ${state.apps.size} installed applications",
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-				)
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Text(
+						text = "Permission Scanner",
+						style = MaterialTheme.typography.headlineSmall,
+						fontWeight = FontWeight.Black
+					)
+					PrivacifyBadge(
+						text = "${state.apps.size} apps",
+						color = MaterialTheme.colorScheme.primary
+					)
+				}
 				Spacer(modifier = Modifier.height(12.dp))
 				OutlinedTextField(
 					value = state.query,
@@ -162,19 +174,21 @@ private fun FilterChip(
 	selected: Boolean,
 	onClick: () -> Unit
 ) {
+	val bgColor by animateColorAsState(
+		targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+		label = "chip_bg"
+	)
 	Box(
 		modifier = Modifier
-			.clip(RoundedCornerShape(12.dp))
-			.background(
-				if (selected) MaterialTheme.colorScheme.primary
-				else MaterialTheme.colorScheme.surface
-			)
+			.clip(RoundedCornerShape(14.dp))
+			.background(bgColor)
 			.clickable { onClick() }
-			.padding(horizontal = 14.dp, vertical = 8.dp)
+			.padding(horizontal = 16.dp, vertical = 10.dp)
 	) {
 		Text(
 			text = label,
-			style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+			style = MaterialTheme.typography.labelLarge,
+			fontWeight = if (selected) FontWeight.Black else FontWeight.SemiBold,
 			color = if (selected) MaterialTheme.colorScheme.onPrimary
 			else MaterialTheme.colorScheme.onSurface
 		)
@@ -186,63 +200,60 @@ private fun AppRow(
 	app: AppPrivacyInfo,
 	onClick: () -> Unit
 ) {
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(RoundedCornerShape(16.dp))
-			.background(MaterialTheme.colorScheme.surface)
-			.clickable { onClick() }
-			.padding(12.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.spacedBy(12.dp)
-	) {
-		Box(
+	val riskColor = when (app.riskLevel) {
+		AppRiskLevel.High -> RedVibrant
+		AppRiskLevel.Medium -> OrangeVibrant
+		AppRiskLevel.Low -> GreenVibrant
+	}
+
+	PrivacifyExpressiveCard(onClick = onClick) {
+		Row(
 			modifier = Modifier
-				.size(48.dp)
-				.clip(RoundedCornerShape(14.dp))
-				.background(
-					when (app.riskLevel) {
-						AppRiskLevel.High -> Color(0xFFEF4444).copy(alpha = 0.15f)
-						AppRiskLevel.Medium -> Color(0xFFF97316).copy(alpha = 0.15f)
-						AppRiskLevel.Low -> Color(0xFF10B981).copy(alpha = 0.15f)
-					}
-				),
-			contentAlignment = Alignment.Center
+				.fillMaxWidth()
+				.padding(12.dp),
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.spacedBy(12.dp)
 		) {
-			Text(
-				text = app.appName.firstOrNull()?.uppercase() ?: "",
-				color = when (app.riskLevel) {
-					AppRiskLevel.High -> Color(0xFFEF4444)
-					AppRiskLevel.Medium -> Color(0xFFF97316)
-					AppRiskLevel.Low -> Color(0xFF10B981)
-				},
-				style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-			)
-		}
-		Column(modifier = Modifier.weight(1f)) {
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.SpaceBetween,
-				verticalAlignment = Alignment.CenterVertically
+			Box(
+				modifier = Modifier
+					.size(48.dp)
+					.clip(RoundedCornerShape(16.dp))
+					.background(riskColor.copy(alpha = 0.15f)),
+				contentAlignment = Alignment.Center
 			) {
 				Text(
-					text = app.appName,
-					style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-					maxLines = 1,
-					overflow = TextOverflow.Ellipsis,
-					modifier = Modifier.weight(1f, fill = false)
+					text = app.appName.firstOrNull()?.uppercase() ?: "",
+					color = riskColor,
+					style = MaterialTheme.typography.titleMedium,
+					fontWeight = FontWeight.Black
 				)
-				Spacer(modifier = Modifier.width(8.dp))
-				RiskBadge(app)
 			}
-			Spacer(modifier = Modifier.height(4.dp))
-			Text(
-				text = app.permissionsSummary,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant,
-				maxLines = 1,
-				overflow = TextOverflow.Ellipsis
-			)
+			Column(modifier = Modifier.weight(1f)) {
+				Row(
+					modifier = Modifier.fillMaxWidth(),
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Text(
+						text = app.appName,
+						style = MaterialTheme.typography.bodyLarge,
+						fontWeight = FontWeight.Bold,
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis,
+						modifier = Modifier.weight(1f, fill = false)
+					)
+					Spacer(modifier = Modifier.width(8.dp))
+					RiskBadge(app)
+				}
+				Spacer(modifier = Modifier.height(4.dp))
+				Text(
+					text = app.permissionsSummary,
+					style = MaterialTheme.typography.bodySmall,
+					color = MaterialTheme.colorScheme.onSurfaceVariant,
+					maxLines = 1,
+					overflow = TextOverflow.Ellipsis
+				)
+			}
 		}
 	}
 }
@@ -252,20 +263,20 @@ private fun RiskBadge(app: AppPrivacyInfo) {
 	val (label, bg, fg) = when (app.riskLevel) {
 		AppRiskLevel.High -> Triple(
 			"High Risk",
-			Color(0xFFEF4444).copy(alpha = 0.15f),
-			Color(0xFFEF4444)
+			RedVibrant.copy(alpha = 0.15f),
+			RedVibrant
 		)
 
 		AppRiskLevel.Medium -> Triple(
 			"Medium",
-			Color(0xFFF97316).copy(alpha = 0.15f),
-			Color(0xFFF97316)
+			OrangeVibrant.copy(alpha = 0.15f),
+			OrangeVibrant
 		)
 
 		AppRiskLevel.Low -> Triple(
 			"Safe",
-			Color(0xFF10B981).copy(alpha = 0.15f),
-			Color(0xFF10B981)
+			GreenVibrant.copy(alpha = 0.15f),
+			GreenVibrant
 		)
 	}
 
@@ -285,7 +296,8 @@ private fun RiskBadge(app: AppPrivacyInfo) {
 		Spacer(modifier = Modifier.width(4.dp))
 		Text(
 			text = label,
-			style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+			style = MaterialTheme.typography.labelSmall,
+			fontWeight = FontWeight.Black,
 			color = fg
 		)
 	}
