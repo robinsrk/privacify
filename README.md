@@ -20,26 +20,26 @@ Privacy Control Center — monitor and manage app permissions, track sensor usag
 | **Permission Scanner** | Identifies apps with risky permission combinations and provides risk ratings |
 | **App Monitoring** | Tracks microphone, camera, and location access across all installed apps |
 | **Permission Analytics** | Usage breakdown by permission type, risk level, and historical trends |
-| **Lockdown Mode** | One-tap privacy enforcement that blocks sensor access system-wide |
+| **Quick Settings Tile** | One-tap lockdown toggle from the notification shade |
+| **Home Screen Widget** | Lockdown toggle widget with live status |
 
 ### Advanced Mode (Root/Shizuku)
 
 | Feature | Description |
 |---------|-------------|
 | **Hardware Kill Switches** | Disable microphone and camera at the system level (requires root or Shizuku) |
-| **Auto-Guard** | Automatically pauses kill switches when camera/mic are actively in use, restores after idle period |
+| **Lockdown Mode** | Instant system-wide sensor deactivation with panic button |
 | **AppOps Management** | Fine-grained permission control per app through AppOps |
+| **Auto-Guard** | Automatically pauses kill switches when camera/mic are actively in use, restores after idle period (Pro) |
 
 ## Screenshots
 
-<!-- TODO: Add screenshots once the UI is finalized -->
-<!--
 <div align="center">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot1.png" width="200" />
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot2.png" width="200" />
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screenshot3.png" width="200" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1. Dashboard.png" width="200" alt="Dashboard" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2. Apps.png" width="200" alt="Permission Scanner" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3. Analytics.png" width="200" alt="Analytics" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4. Auto Guard.png" width="200" alt="Auto-Guard" />
 </div>
--->
 
 ## Permissions
 
@@ -48,13 +48,14 @@ Privacy Control Center — monitor and manage app permissions, track sensor usag
 | `PACKAGE_USAGE_STATS` | Detect which apps are currently active to apply privacy rules |
 | `QUERY_ALL_PACKAGES` | List all installed apps for permission scanning and management |
 | `POST_NOTIFICATIONS` | Alert you when apps access camera or microphone |
-| `FOREGROUND_SERVICE` | Run Auto-Guard automation in the background |
-| `CAMERA` | Monitor camera sensor status for kill switch automation |
-| `RECORD_AUDIO` | Monitor microphone sensor status for kill switch automation |
-| `READ_PHONE_STATE` | Detect phone calls for Auto-Guard pause/resume |
+| `FOREGROUND_SERVICE` | Run background monitoring and automation |
+| `FOREGROUND_SERVICE_SPECIAL_USE` | Required for ongoing sensor monitoring service |
 | `RECEIVE_BOOT_COMPLETED` | Restart automation service after device reboot |
 | `INTERNET` | Required by Shizuku for inter-process communication |
+| `ACCESS_NETWORK_STATE` | Required by Shizuku for network state queries |
 | `INTERACT_ACROSS_USERS_FULL` | Required by Shizuku for multi-user support |
+| `WAKE_LOCK` | Keep device awake during critical operations |
+| `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Allow user to exempt app from battery optimization |
 
 ## Requirements
 
@@ -83,7 +84,7 @@ cd privacify_free
 ./gradlew :app:assembleRelease
 ```
 
-APK output: `privacify_free/app/build/outputs/apk/release/app-release-unsigned.apk`
+APK output: `privacify_free/app/build/outputs/apk/release/Privacify.apk`
 
 ### Pro build (with root/Shizuku features)
 
@@ -110,6 +111,7 @@ privacify_app/
 │   │   ├── src/main/        # Free feature implementations
 │   │   └── build.gradle.kts
 │   ├── fastlane/            # F-Droid/IzzyOnDroid metadata
+│   ├── .github/workflows/   # CI workflows for tagged releases
 │   ├── .fdroid.yml          # F-Droid build recipe
 │   └── LICENSE              # Apache 2.0
 └── privacify_pro/           # Pro module (not in public repo)
@@ -126,7 +128,7 @@ privacify_app/
 ## Tech Stack
 
 - **Language:** Kotlin
-- **UI:** Jetpack Compose + Material 3
+- **UI:** Jetpack Compose + Material 3 Expressive
 - **Architecture:** MVVM with StateFlow
 - **DI:** Manual dependency injection via providers
 - **Storage:** DataStore Preferences
