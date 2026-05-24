@@ -1,18 +1,44 @@
-# Privacify
-
-Privacy Control Center — monitor and manage app permissions, track sensor usage, and secure your device. All data stays on your device. No ads, no tracking, no analytics.
-
 <div align="center">
-
-[![Get it on F-Droid](https://img.shields.io/badge/Get%20it%20on-F--Droid-green?style=for-the-badge&logo=f-droid)](https://f-droid.org/packages/dev.robin.privacify/)
-[![Get it on IzzyOnDroid](https://img.shields.io/badge/Get%20it%20on-IzzyOnDroid-orange?style=for-the-badge&logo=fdroid)](https://apt.izzysoft.de/fdroid/index/apk/dev.robin.privacify)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?style=for-the-badge)](LICENSE)
-
+  <img src="fastlane/metadata/android/en-US/images/featureGraphic/featuregraphic.png" alt="Privacify" width="100%" />
 </div>
 
-## Features
+<h1 align="center">Privacify</h1>
 
-### Standard Mode (all devices)
+<p align="center">
+  <strong>Privacy Control Center</strong> — monitor app permissions, track sensor usage, and secure your device.
+  <br />
+  All data stays on your device. No ads, no tracking, no analytics.
+</p>
+
+<p align="center">
+  <a href="https://f-droid.org/packages/dev.robin.privacify/">
+    <img src="https://img.shields.io/badge/F--Droid-1976D2?style=for-the-badge&logo=f-droid&logoColor=white" alt="F-Droid" />
+  </a>
+  <a href="https://apt.izzysoft.de/fdroid/index/apk/dev.robin.privacify">
+    <img src="https://img.shields.io/badge/IzzyOnDroid-E91E63?style=for-the-badge&logo=fdroid&logoColor=white" alt="IzzyOnDroid" />
+  </a>
+  <a href="https://github.com/robinsrk/privacify/releases">
+    <img src="https://img.shields.io/badge/GitHub_Releases-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Releases" />
+  </a>
+  <a href="https://www.patreon.com/posts/privacify-159119797">
+    <img src="https://img.shields.io/badge/Support_on_Patreon-FF424D?style=for-the-badge&logo=patreon&logoColor=white" alt="Patreon" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square" alt="License" />
+  </a>
+  <img src="https://img.shields.io/badge/Min%20SDK-24-brightgreen?style=flat-square" alt="Min SDK" />
+  <img src="https://img.shields.io/badge/Target%20SDK-34-brightgreen?style=flat-square" alt="Target SDK" />
+  <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
+</p>
+
+---
+
+## ✨ Features
+
+### 🛡️ Standard Mode (all devices)
 
 | Feature | Description |
 |---------|-------------|
@@ -23,30 +49,34 @@ Privacy Control Center — monitor and manage app permissions, track sensor usag
 | **Quick Settings Tile** | One-tap lockdown toggle from the notification shade |
 | **Home Screen Widget** | Lockdown toggle widget with live status |
 
-### Advanced Mode (Root/Shizuku)
+### ⚡ Advanced Mode (Root/Shizuku)
 
 | Feature | Description |
 |---------|-------------|
-| **Hardware Kill Switches** | Disable microphone and camera at the system level (requires root or Shizuku) |
+| **Hardware Kill Switches** | Disable microphone and camera at the system level |
 | **Lockdown Mode** | Instant system-wide sensor deactivation with panic button |
 | **AppOps Management** | Fine-grained permission control per app through AppOps |
-| **Auto-Guard** | Automatically pauses kill switches when camera/mic are actively in use, restores after idle period (Pro) |
-
-## Screenshots
+| **Auto-Guard** ⭐ | Automatically pauses kill switches when camera/mic are actively in use, restores after idle period |
 
 <div align="center">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1. Dashboard.png" width="200" alt="Dashboard" />
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2. Apps.png" width="200" alt="Permission Scanner" />
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3. Analytics.png" width="200" alt="Analytics" />
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4. Auto Guard.png" width="200" alt="Auto-Guard" />
+
+## 📸 Preview
+
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1. Dashboard.png" width="22%" alt="Dashboard" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2. Apps.png" width="22%" alt="Permission Scanner" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3. Analytics.png" width="22%" alt="Analytics" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4. Auto Guard.png" width="22%" alt="Auto-Guard" />
+
 </div>
 
-## Permissions
+---
+
+## 🔐 Permissions
 
 | Permission | Reason |
 |------------|--------|
 | `PACKAGE_USAGE_STATS` | Detect which apps are currently active to apply privacy rules |
-| `QUERY_ALL_PACKAGES` | List all installed apps for permission scanning and management |
+| `QUERY_ALL_PACKAGES` | List all installed apps for permission scanning |
 | `POST_NOTIFICATIONS` | Alert you when apps access camera or microphone |
 | `FOREGROUND_SERVICE` | Run background monitoring and automation |
 | `FOREGROUND_SERVICE_SPECIAL_USE` | Required for ongoing sensor monitoring service |
@@ -57,18 +87,19 @@ Privacy Control Center — monitor and manage app permissions, track sensor usag
 | `WAKE_LOCK` | Keep device awake during critical operations |
 | `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` | Allow user to exempt app from battery optimization |
 
-## Requirements
+---
 
-- **Android 7.0+** (Nougat, API 24)
-- **Optional:** Root access or [Shizuku](https://shizuku.rikka.app/) for advanced features
+## 📦 Download
 
-## Download
+| Source | Link |
+|--------|------|
+| <img src="https://f-droid.org/badge/get-it-on.png" height="20" alt="F-Droid" /> | [F-Droid](https://f-droid.org/packages/dev.robin.privacify/) |
+| <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="20" alt="IzzyOnDroid" /> | [IzzyOnDroid](https://apt.izzysoft.de/fdroid/index/apk/dev.robin.privacify) |
+| <img src="https://github.githubassets.com/favicons/favicon.svg" height="20" alt="GitHub" /> | [GitHub Releases](https://github.com/robinsrk/privacify/releases) |
 
-- [F-Droid](https://f-droid.org/packages/dev.robin.privacify/)
-- [IzzyOnDroid](https://apt.izzysoft.de/fdroid/index/apk/dev.robin.privacify)
-- [GitHub Releases](https://github.com/robinsrk/privacify/releases)
+---
 
-## Building
+## 🛠️ Building
 
 ### Prerequisites
 
@@ -77,18 +108,14 @@ Privacy Control Center — monitor and manage app permissions, track sensor usag
 
 ### Free build (standard features only)
 
-This is the build submitted to F-Droid and IzzyOnDroid. It does not include the pro module.
-
 ```bash
 cd privacify_free
 ./gradlew :app:assembleRelease
 ```
 
-APK output: `privacify_free/app/build/outputs/apk/release/Privacify.apk`
+APK output: `app/build/outputs/apk/release/Privacify.apk`
 
 ### Pro build (with root/Shizuku features)
-
-Includes hardware kill switches, Auto-Guard automation, and AppOps management. The pro source directory (`privacify_pro/`) is not included in the public repository — you must provide it separately.
 
 ```bash
 cd privacify_free
@@ -102,7 +129,9 @@ cd privacify_free
 ./gradlew :app:assembleDebug
 ```
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
 privacify_app/
@@ -118,24 +147,43 @@ privacify_app/
     └── app/src/main/        # Root/Shizuku controller implementations
 ```
 
-## Privacy
+---
+
+## 🔒 Privacy
 
 - **No ads** — zero advertising SDKs
 - **No tracking** — no analytics, crash reporting, or telemetry
-- **No network** — no HTTP client libraries; the `INTERNET` permission is only used by Shizuku for IPC
+- **No network** — no HTTP client libraries; `INTERNET` is only used by Shizuku for IPC
 - **All data stays local** — stored in DataStore on your device
 
-## Tech Stack
+---
 
-- **Language:** Kotlin
-- **UI:** Jetpack Compose + Material 3 Expressive
-- **Architecture:** MVVM with StateFlow
-- **DI:** Manual dependency injection via providers
-- **Storage:** DataStore Preferences
-- **Root access:** Shizuku API
-- **Min SDK:** 24 | **Target SDK:** 34
+## 🧱 Tech Stack
 
-## License
+| Tech | Choice |
+|------|--------|
+| **Language** | Kotlin |
+| **UI** | Jetpack Compose + Material 3 Expressive |
+| **Architecture** | MVVM with StateFlow |
+| **DI** | Manual dependency injection via providers |
+| **Storage** | DataStore Preferences |
+| **Root access** | Shizuku API |
+| **Min SDK** | 24 |
+| **Target SDK** | 34 |
+
+---
+
+## ☕ Support
+
+If you find Privacify useful, consider supporting development on Patreon:
+
+[![Support on Patreon](https://img.shields.io/badge/Support%20on%20Patreon-FF424D?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/posts/privacify-159119797)
+
+Your support helps maintain the project, develop new features, and keep it free and open source.
+
+---
+
+## 📄 License
 
 ```
 Copyright 2026 Robin
