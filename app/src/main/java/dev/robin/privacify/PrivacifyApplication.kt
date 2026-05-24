@@ -6,6 +6,7 @@ import dev.robin.privacify.core.utils.AppContextProvider
 import dev.robin.privacify.core.settings.UserPreferencesManager
 import dev.robin.privacify.core.provider.PermissionAutomationProvider
 import dev.robin.privacify.core.security.PrivacyControllersProvider
+import dev.robin.privacify.pro.utils.ShellUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,19 +27,11 @@ class PrivacifyApplication : Application() {
 		
 		val prefs = UserPreferencesManager.getInstance(this)
 		
-		try {
-			val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
-			val setter = clazz.getMethod("setShellTypePreference", String::class.java)
-			setter.invoke(null, prefs.shellType.value)
-		} catch (_: Exception) {}
+		ShellUtils.setShellType(prefs.shellType.value)
 		
 		CoroutineScope(Dispatchers.IO).launch {
 			prefs.shellType.collect { type ->
-				try {
-					val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
-					val setter = clazz.getMethod("setShellTypePreference", String::class.java)
-					setter.invoke(null, type)
-				} catch (_: Exception) {}
+				ShellUtils.setShellType(type)
 				try {
 					dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
 				} catch (_: Exception) {}
@@ -106,19 +99,14 @@ class PrivacifyApplication : Application() {
 	
 	private suspend fun checkAndStartShizuku() {
 		try {
-			val shellCls = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
-			val getter = shellCls.getMethod("getShellTypePreference")
-			val shellType = getter.invoke(null) as? String ?: "auto"
+			val shellType = ShellUtils.shellTypePreference
 			Log.d(TAG, "Shell type preference: $shellType")
 			
 			if (shellType == "shizuku" || shellType == "auto") {
-				val isAvailable = shellCls.getMethod("isShizukuAvailable").invoke(null) as? Boolean ?: false
-				if (!isAvailable) {
+				if (!ShellUtils.isShizukuAvailable()) {
 					Log.d(TAG, "Shizuku not running, attempting to start...")
-					val isRoot = shellCls.getMethod("isRootAvailable").invoke(null) as? Boolean ?: false
-					if (isRoot) {
-						val runRoot = shellCls.getMethod("runRootCommand", String::class.java)
-						runRoot.invoke(null, "shizuku start")
+					if (ShellUtils.isRootAvailable()) {
+						ShellUtils.runRootCommand("shizuku start")
 						Log.d(TAG, "Sent shizuku start command")
 					}
 				}

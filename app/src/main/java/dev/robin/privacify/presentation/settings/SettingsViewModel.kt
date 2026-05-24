@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.robin.privacify.core.security.PrivacyControllersProvider
 import dev.robin.privacify.core.theme.AppThemeMode
 import dev.robin.privacify.core.theme.ThemePreferenceManager
+import dev.robin.privacify.pro.utils.ShellUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ data class SettingsUiState(
 	val scanFrequencyLabel: String = "Daily",
 	val themeLabel: String = "Dark Mode",
 	val automationEnabled: Boolean = false,
+	val autostartEnabled: Boolean = false,
 	val shellTypeLabel: String = "Auto",
 	val shizukuStatus: String = "",
 	val shizukuAutoStart: Boolean = false
@@ -40,13 +42,15 @@ class SettingsViewModel(
 				prefs.notificationsEnabled,
 				prefs.scanFrequency,
 				prefs.automationEnabled,
+				prefs.autostartEnabled,
 				prefs.shellType
 			) { array ->
 				val theme = array[0] as AppThemeMode
 				val notify = array[1] as Boolean
 				val freq = array[2] as String
 				val automation = array[3] as Boolean
-				val shellType = array[4] as String
+				val autostart = array[4] as Boolean
+				val shellType = array[5] as String
 
 				val currentShizukuStatus = mutableState.value.shizukuStatus
 
@@ -55,6 +59,7 @@ class SettingsViewModel(
 					scanFrequencyLabel = freq,
 					themeLabel = themeModeToLabel(theme),
 					automationEnabled = automation,
+					autostartEnabled = autostart,
 					shellTypeLabel = shellTypeToLabel(shellType),
 					shizukuStatus = currentShizukuStatus.ifEmpty { "Unknown" }
 				)
@@ -75,6 +80,10 @@ class SettingsViewModel(
 	fun onAutomationChanged(enabled: Boolean) {
 		prefs.setAutomationEnabled(enabled)
 		dev.robin.privacify.core.provider.PermissionAutomationProvider.provide().automatePermissions(enabled)
+	}
+
+	fun onAutostartChanged(enabled: Boolean) {
+		prefs.setAutostartEnabled(enabled)
 	}
 
 	fun onEditHostsClicked() {
@@ -124,9 +133,7 @@ class SettingsViewModel(
 	fun requestShizukuAutoStart(context: android.content.Context?) {
 		try {
 			context?.let {
-				val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
-				val method = clazz.getMethod("requestShizukuAutoStart", android.content.Context::class.java)
-				method.invoke(null, it)
+				ShellUtils.requestShizukuAutoStart(it)
 			}
 		} catch (e: Exception) {
 		}
@@ -140,9 +147,7 @@ class SettingsViewModel(
 
 	private suspend fun refreshShizukuStatusInternal(context: android.content.Context?) {
 		val status = try {
-			val clazz = Class.forName("dev.robin.privacify.pro.utils.ShellUtils")
-			val method = clazz.getMethod("getShizukuStatus", android.content.Context::class.java)
-			method.invoke(null, context) as? String ?: "Error"
+			ShellUtils.getShizukuStatus(context)
 		} catch (e: Exception) {
 			"Error"
 		}
