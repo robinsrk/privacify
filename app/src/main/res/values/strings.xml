@@ -4,4 +4,6 @@
 	<string name="nav_apps">Apps</string>
 	<string name="nav_analytics">Analytics</string>
 	<string name="nav_settings">Settings</string>
+	<string name="tile_lockdown_label">Lockdown</string>
+	<string name="widget_lockdown_description">Toggle lockdown mode</string>
 </resources>
