@@ -78,6 +78,8 @@ import dev.robin.privacify.ui.components.PrivacifyIconBox
 import dev.robin.privacify.ui.theme.AutoGuardPrimary
 import dev.robin.privacify.ui.theme.BlueVibrant
 import dev.robin.privacify.ui.theme.DarkBackground
+import dev.robin.privacify.ui.theme.ExpressiveExtraExtraLarge
+import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
 import dev.robin.privacify.ui.theme.GradientEnd
 import dev.robin.privacify.ui.theme.GradientMid
 import dev.robin.privacify.ui.theme.GradientStart
@@ -204,7 +206,7 @@ private fun OnboardingBottomBar(
 		Button(
 			onClick = onContinue,
 			enabled = buttonEnabled,
-			shape = RoundedCornerShape(16.dp),
+			shape = ExpressiveLargeIncreased,
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(56.dp),
@@ -278,7 +280,7 @@ private fun WelcomeContent() {
 			Box(
 				modifier = Modifier
 					.size(280.dp)
-					.clip(RoundedCornerShape(40.dp))
+					.clip(ExpressiveExtraExtraLarge)
 					.background(
 						Brush.linearGradient(
 							colors = listOf(GradientStart, GradientMid, GradientEnd)
@@ -745,9 +747,9 @@ private fun FeatureRowCard(
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clip(RoundedCornerShape(16.dp))
+			.clip(ExpressiveLargeIncreased)
 			.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-			.border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(16.dp))
+			.border(1.dp, Color.White.copy(alpha = 0.05f), ExpressiveLargeIncreased)
 			.padding(16.dp),
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.spacedBy(16.dp)
