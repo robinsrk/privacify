@@ -93,10 +93,12 @@ fun SettingsScreen() {
 				modifier = Modifier.padding(horizontal = 4.dp)
 			)
 
-			ProtectionSection(
-				enabled = state.automationEnabled,
-				onToggle = viewModel::onAutomationChanged
-			)
+		ProtectionSection(
+			enabled = state.automationEnabled,
+			onToggle = viewModel::onAutomationChanged,
+			autostartEnabled = state.autostartEnabled,
+			onAutostartToggle = viewModel::onAutostartChanged
+		)
 
 			GeneralSection(
 				state = state,
@@ -122,8 +124,13 @@ fun SettingsScreen() {
 @Composable
 private fun ProtectionSection(
 	enabled: Boolean,
-	onToggle: (Boolean) -> Unit
+	onToggle: (Boolean) -> Unit,
+	autostartEnabled: Boolean,
+	onAutostartToggle: (Boolean) -> Unit
 ) {
+	var showAutostartProDialog by remember { mutableStateOf(false) }
+	val isPro = ProFeature.isAutoGuardAvailable()
+
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Row(
 			modifier = Modifier
@@ -143,6 +150,35 @@ private fun ProtectionSection(
 		PrivacifyAutoGuardCard(
 			enabled = enabled,
 			onToggle = onToggle
+		)
+		PrivacifyExpressiveCard {
+			SettingsRow(
+				title = "App Autostart",
+				subtitle = "Automatically start at boot",
+				icon = Icons.Outlined.PowerSettingsNew,
+				iconTint = AutoGuardPrimary,
+				iconBackground = AutoGuardPrimary.copy(alpha = 0.12f),
+				trailing = {
+					PrivacifySwitch(
+						checked = autostartEnabled,
+						onCheckedChange = { newValue ->
+							if (isPro) {
+								onAutostartToggle(newValue)
+							} else {
+								showAutostartProDialog = true
+							}
+						}
+					)
+				}
+			)
+		}
+	}
+
+	if (showAutostartProDialog) {
+		PrivacifyProDialog(
+			featureName = "App Autostart",
+			description = "Automatically start the app at boot for persistent protection.",
+			onDismiss = { showAutostartProDialog = false }
 		)
 	}
 }
@@ -410,6 +446,14 @@ private fun AdvancedSection(
 
 @Composable
 private fun AboutSection() {
+	val context = LocalContext.current
+	val uriHandler = LocalUriHandler.current
+	val versionName = remember {
+		try {
+			context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
+		} catch (_: Exception) { "1.0.0" }
+	}
+
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		PrivacifySectionHeader(title = "About")
 		PrivacifyExpressiveCard {
@@ -419,19 +463,17 @@ private fun AboutSection() {
 					subtitle = "View source on GitHub",
 					icon = Icons.Outlined.Code,
 					iconTint = MaterialTheme.colorScheme.primary,
-					iconBackground = MaterialTheme.colorScheme.primaryContainer
-				)
-				GradientDivider()
-				SettingsRow(
-					title = "Privacy Policy",
-					icon = Icons.Outlined.Policy,
-					iconTint = MaterialTheme.colorScheme.secondary,
-					iconBackground = MaterialTheme.colorScheme.secondaryContainer
+					iconBackground = MaterialTheme.colorScheme.primaryContainer,
+					onClick = {
+						try {
+							uriHandler.openUri("https://github.com/robinsrk/privacify")
+						} catch (_: Exception) {}
+					}
 				)
 				GradientDivider()
 				SettingsRow(
 					title = "Version",
-					subtitle = "1.0.0",
+					subtitle = versionName,
 					icon = Icons.Outlined.Info,
 					iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
 					iconBackground = MaterialTheme.colorScheme.surfaceVariant
