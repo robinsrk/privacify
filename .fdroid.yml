@@ -40,6 +40,16 @@ Builds:
     scanignore:
       - AndroidManifest.xml
 
+  - versionName: 1.1
+    versionCode: 2
+    commit: main
+    subdir: privacify_free
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
 MaintainerNotes:
   The pro module at privacify_pro/ is not included in this repository.
   Free builds detect pro availability via ProFeature.isAutoGuardAvailable().
