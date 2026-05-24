@@ -55,6 +55,7 @@ import dev.robin.privacify.ui.components.PrivacifyIconBox
 import dev.robin.privacify.ui.components.PrivacifyProDialog
 import dev.robin.privacify.ui.components.PrivacifySectionHeader
 import dev.robin.privacify.ui.components.PrivacifyStatusIndicator
+import dev.robin.privacify.ui.components.PrivacifyDivider
 import dev.robin.privacify.ui.components.PrivacifySwitch
 import dev.robin.privacify.ui.components.PrivacifyWarningBanner
 import dev.robin.privacify.ui.theme.AutoGuardPrimary
@@ -234,24 +235,6 @@ private fun SettingsRow(
 }
 
 @Composable
-private fun GradientDivider() {
-	Box(
-		modifier = Modifier
-			.fillMaxWidth()
-			.height(1.dp)
-			.padding(start = 72.dp, end = 16.dp)
-			.background(
-				Brush.horizontalGradient(
-					colors = listOf(
-						MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-						Color.Transparent
-					)
-				)
-			)
-	)
-}
-
-@Composable
 private fun GeneralSection(
 	state: SettingsUiState,
 	onNotificationsChanged: (Boolean) -> Unit,
@@ -275,7 +258,7 @@ private fun GeneralSection(
 						)
 					}
 				)
-				GradientDivider()
+				PrivacifyDivider(modifier = Modifier.padding(start = 56.dp))
 				SettingsRow(
 					title = "Scan Frequency",
 					subtitle = state.scanFrequencyLabel,
@@ -284,7 +267,7 @@ private fun GeneralSection(
 					iconBackground = PurpleVibrant.copy(alpha = 0.12f),
 					onClick = onScanFrequencyClick
 				)
-				GradientDivider()
+				PrivacifyDivider(modifier = Modifier.padding(start = 56.dp))
 				SettingsRow(
 					title = "App Theme",
 					subtitle = state.themeLabel,
@@ -470,7 +453,7 @@ private fun AboutSection() {
 						} catch (_: Exception) {}
 					}
 				)
-				GradientDivider()
+				PrivacifyDivider(modifier = Modifier.padding(start = 56.dp))
 				SettingsRow(
 					title = "Version",
 					subtitle = versionName,
