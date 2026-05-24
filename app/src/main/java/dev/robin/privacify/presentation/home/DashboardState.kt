@@ -11,7 +11,8 @@ data class DashboardUiState(
 	val cameraDisabled: Boolean = false,
 	val isRooted: Boolean = false,
 	val isScanning: Boolean = false,
-	val shellType: String = "auto"
+	val shellType: String = "auto",
+	val automationEnabled: Boolean = false
 )
 
 enum class QuickAction {

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import dev.robin.privacify.core.root.RootManagerProvider
+import dev.robin.privacify.core.settings.UserPreferencesManager
 import dev.robin.privacify.data.apps.SystemPermissionScanner
 import dev.robin.privacify.domain.apps.AppPrivacyInfo
 import dev.robin.privacify.domain.apps.AppRiskLevel
@@ -18,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -25,7 +27,8 @@ class DashboardViewModel(
 	private val rootPrivacyController: RootPrivacyController,
 	private val lockdownUseCase: LockdownUseCase,
 	private val permissionScanner: PermissionScanner,
-	private val rootManager: RootManager
+	private val rootManager: RootManager,
+	private val prefs: UserPreferencesManager
 ) : ViewModel() {
 
 	private val mutableState = MutableStateFlow(DashboardUiState())
@@ -62,6 +65,13 @@ class DashboardViewModel(
 				}
 			}
 		}
+		ioScope.launch {
+			prefs.automationEnabled.collectLatest { enabled ->
+				mutableState.update { current ->
+					current.copy(automationEnabled = enabled)
+				}
+			}
+		}
 	}
 
 	fun onQuickActionToggled(action: QuickAction) {
@@ -78,6 +88,11 @@ class DashboardViewModel(
 			delay(500)
 			mutableState.update { it.copy(isScanning = false, statusSubtitle = "Scan complete. Dashboard is up to date.") }
 		}
+	}
+
+	fun onAutoGuardToggled(enabled: Boolean) {
+		prefs.setAutomationEnabled(enabled)
+		dev.robin.privacify.core.provider.PermissionAutomationProvider.provide().automatePermissions(enabled)
 	}
 
 	private fun hasShellAccess(): Boolean {
@@ -161,7 +176,8 @@ class DashboardViewModel(
 						rootPrivacyController = PrivacyControllersProvider.rootPrivacyController,
 						lockdownUseCase = PrivacyControllersProvider.lockdownUseCase,
 						permissionScanner = scanner,
-						rootManager = RootManagerProvider.instance
+						rootManager = RootManagerProvider.instance,
+						prefs = UserPreferencesManager.getInstance(context)
 					) as T
 				}
 			}
