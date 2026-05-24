@@ -53,6 +53,27 @@
 			</intent-filter>
 		</activity>
 
+		<service
+			android:name=".core.widget.LockdownTileService"
+			android:exported="true"
+			android:icon="@drawable/ic_lockdown"
+			android:label="@string/tile_lockdown_label"
+			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+			<intent-filter>
+				<action android:name="android.service.quicksettings.action.QS_TILE" />
+			</intent-filter>
+		</service>
+
+		<receiver
+			android:name=".core.widget.LockdownWidgetProvider"
+			android:exported="true">
+			<intent-filter>
+				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+			</intent-filter>
+			<meta-data
+				android:name="android.appwidget.provider"
+				android:resource="@xml/widget_lockdown_info" />
+		</receiver>
 	</application>
 
 </manifest>
