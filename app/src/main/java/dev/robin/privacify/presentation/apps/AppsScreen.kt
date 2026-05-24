@@ -44,6 +44,7 @@ import dev.robin.privacify.domain.apps.AppPrivacyInfo
 import dev.robin.privacify.domain.apps.AppRiskLevel
 import dev.robin.privacify.ui.components.PrivacifyBadge
 import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
+import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
 import dev.robin.privacify.ui.theme.GreenVibrant
 import dev.robin.privacify.ui.theme.OrangeVibrant
 import dev.robin.privacify.ui.theme.RedVibrant
@@ -88,7 +89,7 @@ fun AppsScreen(
 					value = state.query,
 					onValueChange = { viewModel.onQueryChanged(it) },
 					modifier = Modifier.fillMaxWidth(),
-					shape = RoundedCornerShape(16.dp),
+					shape = ExpressiveLargeIncreased,
 					singleLine = true,
 					placeholder = {
 						Text(text = "Search apps or permissions")
@@ -180,7 +181,7 @@ private fun FilterChip(
 	)
 	Box(
 		modifier = Modifier
-			.clip(RoundedCornerShape(14.dp))
+			.clip(ExpressiveLargeIncreased)
 			.background(bgColor)
 			.clickable { onClick() }
 			.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -217,7 +218,7 @@ private fun AppRow(
 			Box(
 				modifier = Modifier
 					.size(48.dp)
-					.clip(RoundedCornerShape(16.dp))
+					.clip(ExpressiveLargeIncreased)
 					.background(riskColor.copy(alpha = 0.15f)),
 				contentAlignment = Alignment.Center
 			) {
