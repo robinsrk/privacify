@@ -1,0 +1,113 @@
+name: Release Privacify App
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "!v*-pre*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install build tools
+        run: |
+          echo "y" | sudo ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;34.0.0"
+          echo "Build tools installed at: ${ANDROID_HOME}/build-tools/34.0.0"
+
+      - name: Decode and save keystore
+        env:
+          KEYSTORE_FILE: ${{ secrets.SIGNING_KEY }}
+        run: |
+          if [ -z "$KEYSTORE_FILE" ]; then
+            echo "Error: SIGNING_KEY secret is not set"
+            exit 1
+          fi
+          echo "$KEYSTORE_FILE" | base64 --decode > release.keystore
+          if [ ! -f release.keystore ]; then
+            echo "Error: Failed to create keystore file"
+            exit 1
+          fi
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease
+
+      - name: Align and sign APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "Error: One or more signing secrets are not set"
+            exit 1
+          fi
+
+          UNSIGNED_APK="app/build/outputs/apk/release/app-release-unsigned.apk"
+          ALIGNED_APK="app/build/outputs/apk/release/app-release-aligned.apk"
+          SIGNED_APK="app/build/outputs/apk/release/Privacify.apk"
+
+          if [ ! -f "$UNSIGNED_APK" ]; then
+            echo "Error: Unsigned APK not found at $UNSIGNED_APK"
+            exit 1
+          fi
+
+          echo "Aligning APK..."
+          ${ANDROID_HOME}/build-tools/34.0.0/zipalign -v -f 4 "$UNSIGNED_APK" "$ALIGNED_APK"
+
+          echo "Signing APK..."
+          ${ANDROID_HOME}/build-tools/34.0.0/apksigner sign \
+            --ks release.keystore \
+            --ks-pass pass:"${KEYSTORE_PASSWORD}" \
+            --ks-key-alias "${KEY_ALIAS}" \
+            --key-pass pass:"${KEY_PASSWORD}" \
+            --v2-signing-enabled true \
+            --v3-signing-enabled true \
+            --v4-signing-enabled false \
+            --out "$SIGNED_APK" \
+            "$ALIGNED_APK"
+
+          echo "Verifying APK..."
+          ${ANDROID_HOME}/build-tools/34.0.0/apksigner verify --verbose "$SIGNED_APK"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            app/build/outputs/apk/release/Privacify.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: |
+            app/build/outputs/apk/release/Privacify.apk
+          if-no-files-found: error
