@@ -32,6 +32,8 @@
   <img src="https://img.shields.io/badge/Min%20SDK-24-brightgreen?style=flat-square" alt="Min SDK" />
   <img src="https://img.shields.io/badge/Target%20SDK-34-brightgreen?style=flat-square" alt="Target SDK" />
   <img src="https://img.shields.io/badge/Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
+  <img src="https://img.shields.io/github/stars/robinsrk/privacify?style=flat-square&logo=github" alt="Stars" />
+  <img src="https://img.shields.io/github/downloads/robinsrk/privacify/total?style=flat-square&logo=github" alt="Downloads" />
 </p>
 
 ---
