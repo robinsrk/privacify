@@ -19,9 +19,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class LockdownUiState(
-	val lockdownActive: Boolean = false,
-	val micKilled: Boolean = false,
-	val cameraKilled: Boolean = false
+    val lockdownActive: Boolean = false,
+    val micKilled: Boolean = false,
+    val cameraKilled: Boolean = false,
+    val locationKilled: Boolean = false
 )
 
 class LockdownViewModel(
@@ -32,18 +33,23 @@ class LockdownViewModel(
 	private val _state = MutableStateFlow(LockdownUiState())
 	val state: StateFlow<LockdownUiState> = _state
 
-	init {
-		viewModelScope.launch {
-			rootPrivacyController.micDisabled.collectLatest { disabled ->
-				_state.update { it.copy(micKilled = disabled) }
-			}
-		}
-		viewModelScope.launch {
-			rootPrivacyController.cameraDisabled.collectLatest { disabled ->
-				_state.update { it.copy(cameraKilled = disabled) }
-			}
-		}
-	}
+    init {
+        viewModelScope.launch {
+            rootPrivacyController.micDisabled.collectLatest { disabled ->
+                _state.update { it.copy(micKilled = disabled) }
+            }
+        }
+        viewModelScope.launch {
+            rootPrivacyController.cameraDisabled.collectLatest { disabled ->
+                _state.update { it.copy(cameraKilled = disabled) }
+            }
+        }
+        viewModelScope.launch {
+            rootPrivacyController.locationDisabled.collectLatest { disabled ->
+                _state.update { it.copy(locationKilled = disabled) }
+            }
+        }
+    }
 
 	fun toggleLockdown() {
 		viewModelScope.launch {
@@ -65,12 +71,19 @@ class LockdownViewModel(
 		}
 	}
 
-	fun toggleCamera() {
-		viewModelScope.launch {
-			val newState = !_state.value.cameraKilled
-			rootPrivacyController.setCameraDisabled(newState)
-		}
-	}
+    fun toggleCamera() {
+        viewModelScope.launch {
+            val newState = !_state.value.cameraKilled
+            rootPrivacyController.setCameraDisabled(newState)
+        }
+    }
+
+    fun toggleLocation() {
+        viewModelScope.launch {
+            val newState = !_state.value.locationKilled
+            rootPrivacyController.setLocationDisabled(newState)
+        }
+    }
 
 	companion object {
 		val Factory: ViewModelProvider.Factory = viewModelFactory {

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdminPanelSettings
@@ -207,9 +208,7 @@ private fun SettingsRow(
 		PrivacifyIconBox(
 			icon = icon,
 			tint = iconTint,
-			background = iconBackground,
-			size = 48,
-			iconSize = 24
+			background = iconBackground
 		)
 		Spacer(modifier = Modifier.width(16.dp))
 		Column(modifier = Modifier.weight(1f)) {
@@ -338,9 +337,7 @@ private fun AdvancedSection(
 						PrivacifyIconBox(
 							icon = Icons.Outlined.Terminal,
 							tint = PurpleVibrant,
-							background = PurpleVibrant.copy(alpha = 0.12f),
-							size = 48,
-							iconSize = 24
+							background = PurpleVibrant.copy(alpha = 0.12f)
 						)
 						Column(modifier = Modifier.weight(1f)) {
 							Text(
@@ -354,10 +351,10 @@ private fun AdvancedSection(
 									val isSelected = option == state.shellTypeLabel
 									Box(
 										modifier = Modifier
-											.clip(MaterialTheme.shapes.small)
+											.clip(RoundedCornerShape(999.dp))
 											.background(
 												if (isSelected) PurpleVibrant
-												else MaterialTheme.colorScheme.surfaceVariant
+												else MaterialTheme.colorScheme.surfaceBright
 											)
 											.clickable {
 												val newValue = when (option) {
@@ -459,7 +456,7 @@ private fun AboutSection() {
 					subtitle = versionName,
 					icon = Icons.Outlined.Info,
 					iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
-					iconBackground = MaterialTheme.colorScheme.surfaceVariant
+					iconBackground = MaterialTheme.colorScheme.surfaceBright
 				)
 			}
 		}

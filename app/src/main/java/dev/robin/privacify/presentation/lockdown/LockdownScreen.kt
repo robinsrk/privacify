@@ -19,13 +19,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.GppGood
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.Icon
@@ -42,17 +43,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.robin.privacify.ui.components.PrivacifyDivider
-import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
-import dev.robin.privacify.ui.components.PrivacifyIconBox
-import dev.robin.privacify.ui.components.PrivacifySwitch
+import dev.robin.privacify.ui.components.SensorCard
 import dev.robin.privacify.ui.theme.GreenVibrant
 import dev.robin.privacify.ui.theme.LockdownRed
+import dev.robin.privacify.ui.theme.AmberVibrant
+import dev.robin.privacify.ui.theme.MdSpacing
+import dev.robin.privacify.ui.theme.OrangeVibrant
 import dev.robin.privacify.ui.theme.RedVibrant
 
 @Composable
@@ -86,60 +90,74 @@ fun LockdownScreen(
 				Text(
 					text = "Lockdown Mode",
 					style = MaterialTheme.typography.titleLarge,
-					fontWeight = FontWeight.Black
+					fontWeight = FontWeight.Black,
+					modifier = Modifier.semantics { heading() }
 				)
 			}
 
-			Spacer(modifier = Modifier.height(16.dp))
+			Spacer(modifier = Modifier.height(MdSpacing.sm))
 
 			PanicButton(
 				activated = state.lockdownActive,
 				onToggle = { viewModel.toggleLockdown() }
 			)
 
-			Spacer(modifier = Modifier.height(16.dp))
+			Spacer(modifier = Modifier.height(MdSpacing.sm))
 
 			StatusBanner(active = state.lockdownActive)
 
-			Spacer(modifier = Modifier.height(16.dp))
+			Spacer(modifier = Modifier.height(MdSpacing.sm))
 
 			Text(
 				text = "SENSOR CONTROLS",
 				style = MaterialTheme.typography.labelMedium,
 				fontWeight = FontWeight.Black,
-				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-				modifier = Modifier.padding(horizontal = 4.dp)
+				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+				modifier = Modifier
+					.padding(horizontal = 4.dp)
+					.semantics { heading() }
 			)
-			Spacer(modifier = Modifier.height(8.dp))
 
-			PrivacifyExpressiveCard {
-				Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-					SensorToggle(
-						icon = Icons.Outlined.Mic,
-						title = "Microphone",
-						subtitle = "Disable system microphone",
-						enabled = state.micKilled,
-						onToggle = { viewModel.toggleMic() }
-					)
-					PrivacifyDivider(modifier = Modifier.padding(start = 52.dp))
-					SensorToggle(
-						icon = Icons.Outlined.CameraAlt,
-						title = "Camera",
-						subtitle = "Disable all cameras",
-						enabled = state.cameraKilled,
-						onToggle = { viewModel.toggleCamera() }
-					)
-				}
+			Spacer(modifier = Modifier.height(MdSpacing.xs))
+
+			Row(
+				modifier = Modifier.fillMaxWidth(),
+				horizontalArrangement = Arrangement.spacedBy(MdSpacing.xs)
+			) {
+				SensorCard(
+					icon = Icons.Outlined.Mic,
+					title = "Mic",
+					active = state.micKilled,
+					activeColor = RedVibrant,
+					onClick = { viewModel.toggleMic() }
+				)
+				SensorCard(
+					icon = Icons.Outlined.CameraAlt,
+					title = "Camera",
+					active = state.cameraKilled,
+					activeColor = OrangeVibrant,
+					onClick = { viewModel.toggleCamera() }
+				)
+				SensorCard(
+					icon = Icons.Outlined.LocationOn,
+					title = "Location",
+					active = state.locationKilled,
+					activeColor = AmberVibrant,
+					onClick = { viewModel.toggleLocation() }
+				)
 			}
 
-			Spacer(modifier = Modifier.height(16.dp))
+			Spacer(modifier = Modifier.height(MdSpacing.sm))
 
 			Box(
 				modifier = Modifier
 					.fillMaxWidth()
 					.clip(MaterialTheme.shapes.large)
 					.background(RedVibrant.copy(alpha = 0.08f))
-					.padding(16.dp)
+					.padding(MdSpacing.sm)
+					.semantics {
+						contentDescription = "Important: Lockdown mode will disable active communications. Emergency calls may be affected."
+					}
 			) {
 				Row(
 					horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -152,11 +170,11 @@ fun LockdownScreen(
 							.background(RedVibrant.copy(alpha = 0.2f)),
 						contentAlignment = Alignment.Center
 					) {
-						Text(
-							text = "!",
-							style = MaterialTheme.typography.titleSmall,
-							fontWeight = FontWeight.Black,
-							color = RedVibrant
+						Icon(
+							imageVector = Icons.AutoMirrored.Filled.Help,
+							contentDescription = null,
+							tint = RedVibrant,
+							modifier = Modifier.size(14.dp)
 						)
 					}
 					Column {
@@ -175,7 +193,8 @@ fun LockdownScreen(
 					}
 				}
 			}
-			Spacer(modifier = Modifier.height(16.dp))
+
+			Spacer(modifier = Modifier.height(MdSpacing.sm))
 		}
 	}
 }
@@ -218,7 +237,11 @@ private fun PanicButton(
 						)
 					)
 				)
-				.clickable { onToggle() },
+				.clickable { onToggle() }
+				.semantics {
+					contentDescription = if (activated) "Deactivate lockdown" else "Activate lockdown mode"
+					stateDescription = if (activated) "Active" else "Inactive"
+				},
 			contentAlignment = Alignment.Center
 		) {
 			Column(
@@ -254,13 +277,16 @@ private fun StatusBanner(active: Boolean) {
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-				.clip(MaterialTheme.shapes.large)
+			.clip(MaterialTheme.shapes.extraLarge)
 			.background(
 				if (active) GreenVibrant.copy(alpha = 0.12f)
-				else MaterialTheme.colorScheme.surfaceVariant
+				else MaterialTheme.colorScheme.surfaceBright
 			)
-			.padding(16.dp),
-		horizontalArrangement = Arrangement.spacedBy(12.dp),
+			.padding(MdSpacing.sm)
+			.semantics {
+				contentDescription = if (active) "Lockdown active: all sensors disabled" else "Standard mode: privacy controls at normal levels"
+			},
+		horizontalArrangement = Arrangement.spacedBy(MdSpacing.xs),
 		verticalAlignment = Alignment.CenterVertically
 	) {
 		Icon(
@@ -285,49 +311,3 @@ private fun StatusBanner(active: Boolean) {
 		}
 	}
 }
-
-@Composable
-private fun SensorToggle(
-	icon: ImageVector,
-	title: String,
-	subtitle: String,
-	enabled: Boolean,
-	onToggle: () -> Unit
-) {
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clickable { onToggle() }
-			.padding(horizontal = 16.dp, vertical = 12.dp),
-		verticalAlignment = Alignment.CenterVertically
-	) {
-		PrivacifyIconBox(
-			icon = icon,
-			tint = if (enabled) RedVibrant else MaterialTheme.colorScheme.onSurfaceVariant,
-			background = if (enabled) RedVibrant.copy(alpha = 0.12f)
-			else MaterialTheme.colorScheme.surfaceVariant,
-			size = 40,
-			iconSize = 20
-		)
-		Spacer(modifier = Modifier.width(12.dp))
-		Column(modifier = Modifier.weight(1f)) {
-			Text(
-				text = title,
-				style = MaterialTheme.typography.bodyLarge,
-				fontWeight = FontWeight.Bold
-			)
-			Spacer(modifier = Modifier.height(2.dp))
-			Text(
-				text = subtitle,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
-			)
-		}
-		PrivacifySwitch(
-			checked = enabled,
-			onCheckedChange = { onToggle() }
-		)
-	}
-}
-
-
