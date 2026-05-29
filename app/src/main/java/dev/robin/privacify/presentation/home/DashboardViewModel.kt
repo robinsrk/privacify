@@ -15,7 +15,6 @@ import dev.robin.privacify.domain.root.RootManager
 import dev.robin.privacify.domain.root.RootPrivacyController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -59,6 +58,13 @@ class DashboardViewModel(
 			}
 		}
 		ioScope.launch {
+			rootPrivacyController.locationDisabled.collectLatest { disabled ->
+				mutableState.update { current ->
+					current.copy(locationDisabled = disabled)
+				}
+			}
+		}
+		ioScope.launch {
 			permissionScanner.apps.collectLatest { apps ->
 				mutableState.update { current ->
 					computeFromApps(current, apps)
@@ -79,13 +85,13 @@ class DashboardViewModel(
 			QuickAction.Lockdown -> toggleLockdown()
 			QuickAction.MicKill -> toggleMic()
 			QuickAction.CameraKill -> toggleCamera()
+			QuickAction.LocationKill -> toggleLocation()
 		}
 	}
 	fun onScanNowClicked() {
 		ioScope.launch {
 			mutableState.update { it.copy(isScanning = true, statusSubtitle = "Scanning system...") }
 			permissionScanner.refresh()
-			delay(500)
 			mutableState.update { it.copy(isScanning = false, statusSubtitle = "Scan complete. Dashboard is up to date.") }
 		}
 	}
@@ -110,6 +116,13 @@ class DashboardViewModel(
 		if (!hasShellAccess()) return
 		ioScope.launch {
 			rootPrivacyController.setCameraDisabled(!rootPrivacyController.cameraDisabled.value)
+		}
+	}
+
+	private fun toggleLocation() {
+		if (!hasShellAccess()) return
+		ioScope.launch {
+			rootPrivacyController.setLocationDisabled(!rootPrivacyController.locationDisabled.value)
 		}
 	}
 
@@ -150,6 +163,7 @@ class DashboardViewModel(
 		if (current.lockdownEnabled) score += 5
 		if (current.micDisabled) score += 3
 		if (current.cameraDisabled) score += 3
+		if (current.locationDisabled) score += 3
 
 		if (score > 100) score = 100
 		if (score < 0) score = 0
@@ -174,7 +188,7 @@ class DashboardViewModel(
 			return object : ViewModelProvider.Factory {
 				@Suppress("UNCHECKED_CAST")
 				override fun <T : ViewModel> create(modelClass: Class<T>): T {
-					val scanner = SystemPermissionScanner(context.applicationContext)
+					val scanner = SystemPermissionScanner.getInstance(context)
 					return DashboardViewModel(
 						rootPrivacyController = PrivacyControllersProvider.rootPrivacyController,
 						lockdownUseCase = PrivacyControllersProvider.lockdownUseCase,

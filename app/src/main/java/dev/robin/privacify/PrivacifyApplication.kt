@@ -9,27 +9,30 @@ import dev.robin.privacify.core.security.PrivacyControllersProvider
 import dev.robin.privacify.pro.utils.ShellUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import rikka.shizuku.Shizuku
 
 class PrivacifyApplication : Application() {
-	
+
+	private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
 	companion object {
 		private const val TAG = "PrivacifyApp"
 	}
-	
+
 	override fun onCreate() {
 		super.onCreate()
 		Log.d(TAG, "onCreate called")
 		AppContextProvider.context = this
-		
+
 		setupShizukuListener()
-		
+
 		val prefs = UserPreferencesManager.getInstance(this)
-		
 		ShellUtils.setShellType(prefs.shellType.value)
-		
-		CoroutineScope(Dispatchers.IO).launch {
+
+		applicationScope.launch {
 			prefs.shellType.collect { type ->
 				ShellUtils.setShellType(type)
 				try {
@@ -37,15 +40,15 @@ class PrivacifyApplication : Application() {
 				} catch (_: Exception) {}
 			}
 		}
-		
+
 		if (prefs.automationEnabled.value) {
 			try {
 				val controller = PermissionAutomationProvider.provide()
 				controller.automatePermissions(true)
 			} catch (_: Exception) {}
 		}
-		
-		CoroutineScope(Dispatchers.IO).launch {
+
+		applicationScope.launch {
 			try {
 				val lockdownUseCase = PrivacyControllersProvider.lockdownUseCase
 				Log.d(TAG, "Checking lockdown state: ${lockdownUseCase.isActive.value}")
@@ -53,19 +56,24 @@ class PrivacifyApplication : Application() {
 				Log.e(TAG, "Failed to restore lockdown state", e)
 			}
 		}
-		
-		CoroutineScope(Dispatchers.IO).launch {
+
+		applicationScope.launch {
 			try {
 				checkAndStartShizuku()
 			} catch (_: Exception) {}
 		}
 	}
-	
+
+	override fun onTerminate() {
+		applicationScope.cancel()
+		super.onTerminate()
+	}
+
 	private fun setupShizukuListener() {
 		try {
 			Shizuku.addBinderReceivedListenerSticky {
 				Log.d(TAG, "Shizuku binder received")
-				CoroutineScope(Dispatchers.IO).launch {
+				applicationScope.launch {
 					try {
 						dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
 					} catch (_: Exception) {}
@@ -83,10 +91,10 @@ class PrivacifyApplication : Application() {
 					}
 				}
 			}
-			
+
 			Shizuku.addBinderDeadListener {
 				Log.d(TAG, "Shizuku binder dead")
-				CoroutineScope(Dispatchers.IO).launch {
+				applicationScope.launch {
 					try {
 						dev.robin.privacify.core.root.RootManagerProvider.instance.refresh()
 					} catch (_: Exception) {}
@@ -96,12 +104,12 @@ class PrivacifyApplication : Application() {
 			Log.e(TAG, "Failed to setup Shizuku listener", e)
 		}
 	}
-	
+
 	private suspend fun checkAndStartShizuku() {
 		try {
 			val shellType = ShellUtils.shellTypePreference
 			Log.d(TAG, "Shell type preference: $shellType")
-			
+
 			if (shellType == "shizuku" || shellType == "auto") {
 				if (!ShellUtils.isShizukuAvailable()) {
 					Log.d(TAG, "Shizuku not running, attempting to start...")

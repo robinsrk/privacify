@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class SystemPermissionScanner(
+class SystemPermissionScanner private constructor(
 	private val context: Context
 ) : PermissionScanner {
 
@@ -27,6 +27,19 @@ class SystemPermissionScanner(
 	init {
 		scope.launch {
 			loadInstalledApps()
+		}
+	}
+
+	companion object {
+		@Volatile
+		private var instance: SystemPermissionScanner? = null
+
+		fun getInstance(context: Context): SystemPermissionScanner {
+			return instance ?: synchronized(this) {
+				instance ?: SystemPermissionScanner(context.applicationContext).also {
+					instance = it
+				}
+			}
 		}
 	}
 
