@@ -9,6 +9,7 @@ data class DashboardUiState(
 	val lockdownEnabled: Boolean = false,
 	val micDisabled: Boolean = false,
 	val cameraDisabled: Boolean = false,
+	val locationDisabled: Boolean = false,
 	val isRooted: Boolean = false,
 	val isScanning: Boolean = false,
 	val shellType: String = "auto",
@@ -18,5 +19,6 @@ data class DashboardUiState(
 enum class QuickAction {
 	Lockdown,
 	MicKill,
-	CameraKill
+	CameraKill,
+	LocationKill
 }

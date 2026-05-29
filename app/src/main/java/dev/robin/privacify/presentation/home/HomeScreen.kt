@@ -1,11 +1,7 @@
 package dev.robin.privacify.presentation.home
 
-import android.widget.Toast
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -30,11 +26,11 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.MicOff
-import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -54,29 +50,27 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.ui.components.PrivacifyAutoGuardCard
-import dev.robin.privacify.ui.components.PrivacifyChip
-import dev.robin.privacify.ui.components.PrivacifyDivider
-import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
-import dev.robin.privacify.ui.components.PrivacifyIconBox
-import dev.robin.privacify.ui.components.PrivacifySectionHeader
-import dev.robin.privacify.ui.components.PrivacifySwitch
+import dev.robin.privacify.ui.components.PrivacifyStatusIndicator
+import dev.robin.privacify.ui.components.SensorCard
+import dev.robin.privacify.ui.theme.MdSpacing
 import dev.robin.privacify.ui.theme.AmberVibrant
-import dev.robin.privacify.ui.theme.AutoGuardPrimary
-import dev.robin.privacify.ui.theme.BlueVibrant
 import dev.robin.privacify.ui.theme.GradientEnd
 import dev.robin.privacify.ui.theme.GradientMid
 import dev.robin.privacify.ui.theme.GradientStart
 import dev.robin.privacify.ui.theme.GreenVibrant
+import dev.robin.privacify.ui.theme.LockdownRed
 import dev.robin.privacify.ui.theme.OrangeVibrant
-import dev.robin.privacify.ui.theme.PurpleVibrant
 import dev.robin.privacify.ui.theme.RedVibrant
 import dev.robin.privacify.ui.theme.ScoreGreen
 import dev.robin.privacify.ui.theme.ScoreOrange
@@ -117,15 +111,16 @@ fun HomeScreen() {
 				},
 				subtitle = state.statusSubtitle
 			)
-			SystemMonitorSection(state = state)
-			Spacer(modifier = Modifier.height(8.dp))
-			QuickActionsSection(
+
+			Spacer(modifier = Modifier.height(24.dp))
+
+			SensorControlsSection(
 				state = state,
-				onActionToggle = { action ->
-					viewModel.onQuickActionToggled(action)
-				}
+				onActionToggle = { action -> viewModel.onQuickActionToggled(action) }
 			)
+
 			Spacer(modifier = Modifier.height(16.dp))
+
 			Row(
 				modifier = Modifier
 					.fillMaxWidth()
@@ -182,58 +177,63 @@ private fun HeaderSection(
 	Column(
 		modifier = Modifier
 			.fillMaxWidth()
-			.padding(bottom = 16.dp),
+			.padding(bottom = 16.dp)
+			.semantics {
+				contentDescription = "Privacy Score: $score out of 100, status: $statusText"
+			},
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		Box(
-			contentAlignment = Alignment.Center,
-			modifier = Modifier.size(200.dp)
+		Surface(
+			modifier = Modifier.size(200.dp),
+			shape = CircleShape,
+			color = MaterialTheme.colorScheme.surfaceBright,
+			tonalElevation = 2.dp
 		) {
-			Canvas(modifier = Modifier.size(180.dp)) {
-				val strokeWidth = 14.dp.toPx()
-				drawArc(
-					color = statusColor.copy(alpha = 0.1f),
-					startAngle = 135f,
-					sweepAngle = 270f,
-					useCenter = false,
-					style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-				)
-				drawArc(
-					color = statusColor,
-					startAngle = 135f,
-					sweepAngle = 270f * animatedScore,
-					useCenter = false,
-					style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-				)
-			}
-			Column(horizontalAlignment = Alignment.CenterHorizontally) {
-				Text(
-					text = score.toString(),
-					style = MaterialTheme.typography.displayLarge.copy(
-						fontWeight = FontWeight.Black,
-						fontSize = 48.sp
-					),
-					color = MaterialTheme.colorScheme.onBackground
-				)
-				Spacer(modifier = Modifier.height(8.dp))
-				Box(
-					modifier = Modifier
-						.clip(RoundedCornerShape(999.dp))
-						.background(
-							Brush.linearGradient(gradientColors)
-						)
-						.padding(horizontal = 16.dp, vertical = 6.dp)
-				) {
-					Text(
-						text = statusText,
-						style = MaterialTheme.typography.labelLarge,
-						fontWeight = FontWeight.Black,
-						color = Color.White
+			Box(contentAlignment = Alignment.Center) {
+				Canvas(modifier = Modifier.size(180.dp)) {
+					val strokeWidth = 14.dp.toPx()
+					drawArc(
+						color = statusColor.copy(alpha = 0.1f),
+						startAngle = 135f,
+						sweepAngle = 270f,
+						useCenter = false,
+						style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
 					)
+					drawArc(
+						color = statusColor,
+						startAngle = 135f,
+						sweepAngle = 270f * animatedScore,
+						useCenter = false,
+						style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+					)
+				}
+				Column(horizontalAlignment = Alignment.CenterHorizontally) {
+					Text(
+						text = score.toString(),
+						style = MaterialTheme.typography.displayLarge.copy(
+							fontWeight = FontWeight.Black,
+							fontSize = 48.sp
+						),
+						color = MaterialTheme.colorScheme.onBackground
+					)
+					Spacer(modifier = Modifier.height(8.dp))
+					Box(
+						modifier = Modifier
+							.clip(RoundedCornerShape(999.dp))
+							.background(Brush.linearGradient(gradientColors))
+							.padding(horizontal = 16.dp, vertical = 6.dp)
+					) {
+						Text(
+							text = statusText,
+							style = MaterialTheme.typography.labelLarge,
+							fontWeight = FontWeight.Black,
+							color = Color.White
+						)
+					}
 				}
 			}
 		}
-		Spacer(modifier = Modifier.height(12.dp))
+		Spacer(modifier = Modifier.height(16.dp))
 		Text(
 			text = subtitle,
 			style = MaterialTheme.typography.bodyMedium,
@@ -245,121 +245,17 @@ private fun HeaderSection(
 }
 
 @Composable
-private fun SystemMonitorSection(state: DashboardUiState) {
-	val context = LocalContext.current
-	Column(
-		modifier = Modifier
-			.fillMaxWidth()
-			.padding(horizontal = 16.dp)
-	) {
-		PrivacifySectionHeader(title = "System Monitor")
-		Spacer(modifier = Modifier.height(8.dp))
-		Row(
-			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(12.dp)
-		) {
-			Column(
-				modifier = Modifier.weight(1f),
-				verticalArrangement = Arrangement.spacedBy(12.dp)
-			) {
-				SensorCard(
-					icon = Icons.Outlined.Mic,
-					iconTint = MaterialTheme.colorScheme.primary,
-					iconBackground = MaterialTheme.colorScheme.primaryContainer,
-					title = "Microphone",
-					status = "Not in use",
-					statusColor = MaterialTheme.colorScheme.onSurfaceVariant,
-					description = "${state.micAccessCount} apps with access",
-					onClick = { Toast.makeText(context, "${state.micAccessCount} apps have mic permission", Toast.LENGTH_SHORT).show() }
-				)
-				SensorCard(
-					icon = Icons.Outlined.LocationOn,
-					iconTint = AmberVibrant,
-					iconBackground = AmberVibrant.copy(alpha = 0.12f),
-					title = "Location",
-					status = "Not in use",
-					statusColor = MaterialTheme.colorScheme.onSurfaceVariant,
-					description = "${state.locationAccessCount} apps with access",
-					onClick = { Toast.makeText(context, "${state.locationAccessCount} apps have location permission", Toast.LENGTH_SHORT).show() }
-				)
-			}
-			Column(
-				modifier = Modifier.weight(1f),
-				verticalArrangement = Arrangement.spacedBy(12.dp)
-			) {
-				SensorCard(
-					icon = Icons.Outlined.CameraAlt,
-					iconTint = RedVibrant,
-					iconBackground = RedVibrant.copy(alpha = 0.12f),
-					title = "Camera",
-					status = "Not in use",
-					statusColor = MaterialTheme.colorScheme.onSurfaceVariant,
-					description = "${state.cameraAccessCount} apps with access",
-					onClick = { Toast.makeText(context, "${state.cameraAccessCount} apps have camera permission", Toast.LENGTH_SHORT).show() }
-				)
-			}
-		}
-	}
-}
-
-@Composable
-private fun SensorCard(
-	icon: ImageVector,
-	iconTint: Color,
-	iconBackground: Color,
-	title: String,
-	status: String,
-	statusColor: Color,
-	description: String,
-	onClick: () -> Unit = {}
-) {
-	PrivacifyExpressiveCard(onClick = onClick) {
-		Column(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(16.dp)
-		) {
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.SpaceBetween,
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				PrivacifyIconBox(
-					icon = icon,
-					tint = iconTint,
-					background = iconBackground,
-					size = 40,
-					iconSize = 20
-				)
-				PrivacifyChip(text = status, color = statusColor)
-			}
-			Spacer(modifier = Modifier.height(12.dp))
-			Text(
-				text = title,
-				style = MaterialTheme.typography.titleSmall,
-				fontWeight = FontWeight.Black,
-				color = MaterialTheme.colorScheme.onSurface
-			)
-			Spacer(modifier = Modifier.height(4.dp))
-			Text(
-				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
-			)
-		}
-	}
-}
-
-@Composable
-private fun QuickActionsSection(
+private fun SensorControlsSection(
 	state: DashboardUiState,
 	onActionToggle: (QuickAction) -> Unit
 ) {
+	val hasAccess = state.isRooted
+
 	Column(
 		modifier = Modifier
 			.fillMaxWidth()
 			.padding(horizontal = 16.dp),
-		verticalArrangement = Arrangement.spacedBy(8.dp)
+		verticalArrangement = Arrangement.spacedBy(MdSpacing.sm)
 	) {
 		Row(
 			modifier = Modifier
@@ -369,119 +265,135 @@ private fun QuickActionsSection(
 			verticalAlignment = Alignment.CenterVertically
 		) {
 			Text(
-				text = "QUICK ACTIONS",
+				text = "CONTROLS",
 				style = MaterialTheme.typography.labelMedium,
 				fontWeight = FontWeight.Black,
-				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+				modifier = Modifier.semantics { heading() }
 			)
 			Row(verticalAlignment = Alignment.CenterVertically) {
-				Box(
-					modifier = Modifier
-						.size(6.dp)
-						.clip(CircleShape)
-						.background(if (state.isRooted) GreenVibrant else RedVibrant)
-				)
-				Spacer(modifier = Modifier.width(4.dp))
-				Text(
-					text = if (state.isRooted) "Root Ready" else "No Root",
-					style = MaterialTheme.typography.labelSmall,
-					fontWeight = FontWeight.Bold,
-					color = if (state.isRooted) GreenVibrant else MaterialTheme.colorScheme.onSurfaceVariant
+				PrivacifyStatusIndicator(
+					status = if (state.isRooted) "Root Ready" else "No Root",
+					color = if (state.isRooted) GreenVibrant else RedVibrant
 				)
 			}
 		}
-		PrivacifyExpressiveCard {
-			Column(modifier = Modifier.padding(8.dp)) {
-				Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-					QuickActionRow(
-						icon = Icons.Outlined.Lock,
-						iconTint = MaterialTheme.colorScheme.primary,
-						iconBackground = MaterialTheme.colorScheme.primaryContainer,
-						title = "Lockdown Mode",
-						description = if (state.isRooted) "Block all sensors immediately" else "Requires ${
-							if (state.shellType == "shizuku") "Shizuku" else "Root"
-						} access",
-						checked = state.lockdownEnabled,
-						enabled = state.isRooted,
-						onToggle = { onActionToggle(QuickAction.Lockdown) }
-					)
-					PrivacifyDivider(modifier = Modifier.padding(start = 52.dp))
-					QuickActionRow(
-						icon = Icons.Outlined.MicOff,
-						iconTint = RedVibrant,
-						iconBackground = RedVibrant.copy(alpha = 0.12f),
-						title = "Mic Kill Switch",
-						description = if (state.isRooted) "Disable microphone at system level" else "Requires ${
-							if (state.shellType == "shizuku") "Shizuku" else "Root"
-						} access",
-						checked = state.micDisabled,
-						enabled = state.isRooted,
-						onToggle = { onActionToggle(QuickAction.MicKill) }
-					)
-					PrivacifyDivider(modifier = Modifier.padding(start = 52.dp))
-					QuickActionRow(
-						icon = Icons.Outlined.CameraAlt,
-						iconTint = OrangeVibrant,
-						iconBackground = OrangeVibrant.copy(alpha = 0.12f),
-						title = "Camera Kill",
-						description = if (state.isRooted) "Disable camera at system level" else "Requires ${
-							if (state.shellType == "shizuku") "Shizuku" else "Root"
-						} access",
-						checked = state.cameraDisabled,
-						enabled = state.isRooted,
-						onToggle = { onActionToggle(QuickAction.CameraKill) }
-					)
-				}
-			}
+
+		LockdownCard(
+			hasAccess = hasAccess,
+			isActive = state.lockdownEnabled,
+			shellType = state.shellType,
+			onToggle = { onActionToggle(QuickAction.Lockdown) }
+		)
+
+		Text(
+			text = "SENSOR CONTROLS",
+			style = MaterialTheme.typography.labelMedium,
+			fontWeight = FontWeight.Black,
+			color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+			modifier = Modifier
+				.padding(start = 4.dp, end = 4.dp, top = MdSpacing.xs)
+				.semantics { heading() }
+		)
+
+		Row(
+			modifier = Modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.spacedBy(MdSpacing.xs)
+		) {
+			SensorCard(
+				icon = Icons.Outlined.MicOff,
+				title = "Mic",
+				active = state.micDisabled,
+				activeColor = RedVibrant,
+				onClick = { if (hasAccess) onActionToggle(QuickAction.MicKill) }
+			)
+			SensorCard(
+				icon = Icons.Outlined.CameraAlt,
+				title = "Camera",
+				active = state.cameraDisabled,
+				activeColor = OrangeVibrant,
+				onClick = { if (hasAccess) onActionToggle(QuickAction.CameraKill) }
+			)
+			SensorCard(
+				icon = Icons.Outlined.LocationOn,
+				title = "Location",
+				active = state.locationDisabled,
+				activeColor = AmberVibrant,
+				onClick = { if (hasAccess) onActionToggle(QuickAction.LocationKill) }
+			)
 		}
 	}
 }
 
 @Composable
-private fun QuickActionRow(
-	icon: ImageVector,
-	iconTint: Color,
-	iconBackground: Color,
-	title: String,
-	description: String,
-	checked: Boolean,
-	enabled: Boolean = true,
+private fun LockdownCard(
+	hasAccess: Boolean,
+	isActive: Boolean,
+	shellType: String,
 	onToggle: () -> Unit
 ) {
-	Row(
+	Card(
 		modifier = Modifier
 			.fillMaxWidth()
-			.clickable(enabled = enabled) { onToggle() }
-			.padding(horizontal = 16.dp, vertical = 12.dp),
-		verticalAlignment = Alignment.CenterVertically
+			.semantics {
+				contentDescription = "Lockdown Mode, ${if (isActive) "Active" else "Inactive"}"
+				stateDescription = if (isActive) "Active" else "Inactive"
+			}
+			.clickable(enabled = hasAccess) { onToggle() },
+		shape = MaterialTheme.shapes.large,
+		colors = CardDefaults.cardColors(
+			containerColor = when {
+				isActive -> LockdownRed
+				hasAccess -> MaterialTheme.colorScheme.surfaceBright
+				else -> MaterialTheme.colorScheme.surfaceBright.copy(alpha = 0.6f)
+			}
+		),
+		elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
 	) {
-		PrivacifyIconBox(
-			icon = icon,
-			tint = iconTint,
-			background = iconBackground,
-			size = 40,
-			iconSize = 20
-		)
-		Spacer(modifier = Modifier.width(12.dp))
-		Column(modifier = Modifier.weight(1f)) {
-			Text(
-				text = title,
-				style = MaterialTheme.typography.titleSmall,
-				fontWeight = FontWeight.Bold,
-				color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-			)
-			Spacer(modifier = Modifier.height(2.dp))
-			Text(
-				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else 0.5f)
-			)
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(MdSpacing.sm),
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Box(
+				modifier = Modifier
+					.size(48.dp)
+					.clip(MaterialTheme.shapes.medium)
+					.background(
+						if (isActive) Color.White.copy(alpha = 0.2f)
+						else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+					),
+				contentAlignment = Alignment.Center
+			) {
+				Icon(
+					imageVector = if (isActive) Icons.Filled.Security else Icons.Outlined.Lock,
+					contentDescription = null,
+					tint = if (isActive) Color.White else MaterialTheme.colorScheme.primary,
+					modifier = Modifier.size(24.dp)
+				)
+			}
+			Spacer(modifier = Modifier.width(12.dp))
+			Column(modifier = Modifier.weight(1f)) {
+				Text(
+					text = "Lockdown Mode",
+					style = MaterialTheme.typography.titleMedium,
+					fontWeight = FontWeight.Black,
+					color = if (isActive) Color.White else MaterialTheme.colorScheme.onSurface
+				)
+				Spacer(modifier = Modifier.height(4.dp))
+				Text(
+					text = when {
+						isActive -> "All sensors blocked · DND enabled"
+						hasAccess -> "Instantly block all sensors"
+						else -> "Requires ${if (shellType == "shizuku") "Shizuku" else "Root"} access"
+					},
+					style = MaterialTheme.typography.bodyMedium,
+					color = if (isActive) Color.White.copy(alpha = 0.8f)
+					else MaterialTheme.colorScheme.onSurfaceVariant
+				)
+			}
 		}
-		PrivacifySwitch(
-			checked = checked,
-			onCheckedChange = { if (enabled) onToggle() },
-			enabled = enabled
-		)
 	}
 }
 
@@ -493,7 +405,11 @@ private fun ScanNowButton(
 	Button(
 		onClick = onClick,
 		shape = MaterialTheme.shapes.large,
-		modifier = modifier.height(48.dp),
+		modifier = modifier
+			.height(48.dp)
+			.semantics {
+				contentDescription = "Scan Now"
+			},
 		colors = ButtonDefaults.buttonColors(
 			containerColor = MaterialTheme.colorScheme.primary,
 			contentColor = MaterialTheme.colorScheme.onPrimary
