@@ -9,7 +9,10 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,7 +20,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +30,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,8 +40,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AdminPanelSettings
 import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.DataUsage
-import androidx.compose.material.icons.rounded.FlashOn
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Shield
@@ -56,11 +55,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -74,15 +75,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.domain.onboarding.OnboardingStep
 import dev.robin.privacify.ui.components.PrivacifyBadge
+import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
 import dev.robin.privacify.ui.components.PrivacifyIconBox
 import dev.robin.privacify.ui.theme.AutoGuardPrimary
 import dev.robin.privacify.ui.theme.BlueVibrant
-import dev.robin.privacify.ui.theme.DarkBackground
-import dev.robin.privacify.ui.theme.ExpressiveExtraExtraLarge
-import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
-import dev.robin.privacify.ui.theme.GradientEnd
-import dev.robin.privacify.ui.theme.GradientMid
-import dev.robin.privacify.ui.theme.GradientStart
 import dev.robin.privacify.ui.theme.GreenVibrant
 import dev.robin.privacify.ui.theme.OrangeVibrant
 import dev.robin.privacify.ui.theme.PurpleVibrant
@@ -110,7 +106,7 @@ fun OnboardingRoute(
 	val buttonText: String = when (state.step) {
 		OnboardingStep.Welcome -> "Get Started"
 		OnboardingStep.FeaturesOverview -> "Continue"
-		OnboardingStep.SystemCheck -> "Grant & Continue"
+		OnboardingStep.SystemCheck -> "Continue"
 		OnboardingStep.RootDetection -> "Continue"
 	}
 
@@ -128,21 +124,10 @@ fun OnboardingRoute(
 
 	Surface(
 		modifier = Modifier.fillMaxSize(),
-		color = DarkBackground
+		color = MaterialTheme.colorScheme.background
 	) {
 		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.statusBarsPadding()
-				.background(
-					Brush.verticalGradient(
-						colors = listOf(
-							Color(0xFF030712),
-							Color(0xFF0F172A),
-							Color(0xFF020617)
-						)
-					)
-				)
+			modifier = Modifier.fillMaxSize()
 		) {
 			Box(modifier = Modifier.weight(1f)) {
 				AnimatedContent(
@@ -187,13 +172,23 @@ private fun OnboardingBottomBar(
 	buttonEnabled: Boolean,
 	onContinue: () -> Unit
 ) {
+	var pressed by remember { mutableStateOf(false) }
+	val buttonScale by animateFloatAsState(
+		targetValue = if (pressed) 0.94f else 1f,
+		animationSpec = spring(
+			dampingRatio = Spring.DampingRatioMediumBouncy,
+			stiffness = Spring.StiffnessMedium
+		),
+		label = "btn_scale"
+	)
+
 	Column(
 		modifier = Modifier
 			.fillMaxWidth()
-			.background(Color(0xFF020617).copy(alpha = 0.95f))
+			.background(MaterialTheme.colorScheme.surface)
 			.navigationBarsPadding()
-			.padding(horizontal = 28.dp)
-			.padding(top = 16.dp, bottom = 8.dp),
+			.padding(horizontal = 24.dp)
+			.padding(top = 12.dp, bottom = 8.dp),
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		OnboardingPageIndicator(
@@ -204,12 +199,16 @@ private fun OnboardingBottomBar(
 		Spacer(modifier = Modifier.height(16.dp))
 
 		Button(
-			onClick = onContinue,
+			onClick = {
+				pressed = true
+				onContinue()
+			},
 			enabled = buttonEnabled,
-			shape = ExpressiveLargeIncreased,
+			shape = RoundedCornerShape(999.dp),
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(56.dp),
+				.height(52.dp)
+				.scale(buttonScale),
 			colors = ButtonDefaults.buttonColors(
 				containerColor = MaterialTheme.colorScheme.primary,
 				contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -223,8 +222,6 @@ private fun OnboardingBottomBar(
 				fontWeight = FontWeight.Black
 			)
 		}
-
-		Spacer(modifier = Modifier.height(4.dp))
 	}
 }
 
@@ -253,7 +250,7 @@ private fun OnboardingPageIndicator(
 					.clip(CircleShape)
 					.background(
 						if (isActive) MaterialTheme.colorScheme.primary
-						else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f)
+						else MaterialTheme.colorScheme.outlineVariant
 					)
 			)
 
@@ -269,41 +266,34 @@ private fun WelcomeContent() {
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
-			.padding(horizontal = 28.dp, vertical = 32.dp),
+			.padding(horizontal = 32.dp),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center
 	) {
 		Box(
-			modifier = Modifier.fillMaxWidth(),
+			modifier = Modifier
+				.size(120.dp)
+				.clip(RoundedCornerShape(28.dp))
+				.background(
+					MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+				),
 			contentAlignment = Alignment.Center
 		) {
-			Box(
-				modifier = Modifier
-					.size(280.dp)
-					.clip(ExpressiveExtraExtraLarge)
-					.background(
-						Brush.linearGradient(
-							colors = listOf(GradientStart, GradientMid, GradientEnd)
-						)
-					),
-				contentAlignment = Alignment.Center
-			) {
-				Icon(
-					imageVector = Icons.Rounded.Shield,
-					contentDescription = null,
-					tint = Color.White.copy(alpha = 0.9f),
-					modifier = Modifier.size(120.dp)
-				)
-			}
+			Icon(
+				imageVector = Icons.Rounded.Shield,
+				contentDescription = null,
+				tint = MaterialTheme.colorScheme.primary,
+				modifier = Modifier.size(60.dp)
+			)
 		}
 
-		Spacer(modifier = Modifier.height(40.dp))
+		Spacer(modifier = Modifier.height(32.dp))
 
 		Text(
 			text = "Welcome to\nPrivacify",
 			style = MaterialTheme.typography.displaySmall,
 			fontWeight = FontWeight.Black,
-			color = Color.White,
+			color = MaterialTheme.colorScheme.onBackground,
 			textAlign = TextAlign.Center
 		)
 
@@ -312,7 +302,7 @@ private fun WelcomeContent() {
 		Text(
 			text = "Your ultimate privacy control center.\nMonitor, manage, and protect your data.",
 			style = MaterialTheme.typography.bodyLarge,
-			color = Color(0xFF94A3B8),
+			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
 			textAlign = TextAlign.Center
 		)
 	}
@@ -322,6 +312,33 @@ private fun WelcomeContent() {
 private fun FeaturesContent(
 	onSkip: () -> Unit
 ) {
+	val features = listOf(
+		FeatureItem(
+			title = "Monitor Sensors",
+			description = "Track mic, camera and location access in real-time.",
+			icon = Icons.Rounded.VideocamOff,
+			color = PurpleVibrant
+		),
+		FeatureItem(
+			title = "Block Trackers",
+			description = "Restrict internet access and stop data tracking.",
+			icon = Icons.Rounded.WifiOff,
+			color = BlueVibrant
+		),
+		FeatureItem(
+			title = "Lockdown Mode",
+			description = "One-tap system-wide sensor deactivation.",
+			icon = Icons.Rounded.Lock,
+			color = RedVibrant
+		),
+		FeatureItem(
+			title = "Auto-Guard",
+			description = "Smart protection that adapts to your usage.",
+			icon = Icons.Rounded.AutoAwesome,
+			color = AutoGuardPrimary
+		)
+	)
+
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
@@ -331,9 +348,8 @@ private fun FeaturesContent(
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(top = 24.dp),
-			horizontalArrangement = Arrangement.End,
-			verticalAlignment = Alignment.CenterVertically
+				.padding(top = 20.dp),
+			horizontalArrangement = Arrangement.End
 		) {
 			Text(
 				text = "Skip",
@@ -358,43 +374,55 @@ private fun FeaturesContent(
 		Text(
 			text = "Protect your digital life with our comprehensive suite of privacy tools.",
 			style = MaterialTheme.typography.bodyMedium,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
 		)
 
-		Spacer(modifier = Modifier.height(24.dp))
+		Spacer(modifier = Modifier.height(20.dp))
 
-		Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-				FeatureGridCard(
-					title = "Monitor Usage",
-					description = "Track mic & camera access in real-time.",
-					icon = Icons.Rounded.VideocamOff,
-					iconColor = PurpleVibrant,
-					modifier = Modifier.weight(1f)
-				)
-				FeatureGridCard(
-					title = "Block Network",
-					description = "Restrict internet access per app instantly.",
-					icon = Icons.Rounded.WifiOff,
-					iconColor = BlueVibrant,
-					modifier = Modifier.weight(1f)
-				)
-			}
-			Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-				FeatureGridCard(
-					title = "Lockdown",
-					description = "One-tap system wide sensor deactivation.",
-					icon = Icons.Rounded.Lock,
-					iconColor = RedVibrant,
-					modifier = Modifier.weight(1f)
-				)
-				Spacer(modifier = Modifier.weight(1f))
+		Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+			features.forEach { feature ->
+				PrivacifyExpressiveCard {
+					Row(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(16.dp),
+						verticalAlignment = Alignment.CenterVertically,
+						horizontalArrangement = Arrangement.spacedBy(16.dp)
+					) {
+						PrivacifyIconBox(
+							icon = feature.icon,
+							tint = feature.color,
+							background = feature.color.copy(alpha = 0.12f)
+						)
+						Column(modifier = Modifier.weight(1f)) {
+							Text(
+								text = feature.title,
+								style = MaterialTheme.typography.titleMedium,
+								fontWeight = FontWeight.Bold,
+								color = MaterialTheme.colorScheme.onSurface
+							)
+							Spacer(modifier = Modifier.height(2.dp))
+							Text(
+								text = feature.description,
+								style = MaterialTheme.typography.bodySmall,
+								color = MaterialTheme.colorScheme.onSurfaceVariant
+							)
+						}
+					}
+				}
 			}
 		}
 
 		Spacer(modifier = Modifier.height(24.dp))
 	}
 }
+
+private data class FeatureItem(
+	val title: String,
+	val description: String,
+	val icon: ImageVector,
+	val color: Color
+)
 
 @Composable
 private fun SystemCheckContent(
@@ -442,7 +470,7 @@ private fun SystemCheckContent(
 		Text(
 			text = "To protect your privacy, we need the following permissions to monitor traffic and block trackers.",
 			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
 		)
 
 		Spacer(modifier = Modifier.height(24.dp))
@@ -451,7 +479,7 @@ private fun SystemCheckContent(
 			PermissionCard(
 				title = "Usage Access",
 				description = "Allows app to detect which apps are currently active to apply privacy rules in real-time.",
-				icon = Icons.Rounded.DataUsage,
+				icon = Icons.Rounded.AdminPanelSettings,
 				isGranted = state.usageAccessGranted,
 				onClick = {
 					if (!state.usageAccessGranted) {
@@ -504,7 +532,7 @@ private fun SystemCheckContent(
 				.padding(vertical = 12.dp)
 				.clickable { },
 			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
 			textAlign = TextAlign.Center
 		)
 
@@ -517,67 +545,26 @@ private fun RootDetectionContent() {
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
-			.padding(horizontal = 24.dp, vertical = 32.dp),
+			.padding(horizontal = 24.dp),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center
 	) {
 		Box(
-			modifier = Modifier.padding(vertical = 16.dp),
+			modifier = Modifier
+				.size(128.dp)
+				.clip(RoundedCornerShape(28.dp))
+				.background(PurpleVibrant.copy(alpha = 0.1f)),
 			contentAlignment = Alignment.Center
 		) {
-			Box(
-				modifier = Modifier
-					.size(192.dp)
-					.clip(CircleShape)
-					.background(PurpleVibrant.copy(alpha = 0.2f))
+			Icon(
+				imageVector = Icons.Rounded.AdminPanelSettings,
+				contentDescription = null,
+				tint = PurpleVibrant,
+				modifier = Modifier.size(64.dp)
 			)
-			Box(
-				modifier = Modifier
-					.size(120.dp)
-					.background(
-						Brush.linearGradient(
-							colors = listOf(Color(0xFF1F2937), Color(0xFF101922))
-						),
-						CircleShape
-					)
-					.border(1.dp, Color(0xFF374151), CircleShape),
-				contentAlignment = Alignment.Center
-			) {
-				Icon(
-					imageVector = Icons.Rounded.AdminPanelSettings,
-					contentDescription = null,
-					tint = PurpleVibrant,
-					modifier = Modifier.size(64.dp)
-				)
-			}
 		}
 
-		Box(
-			modifier = Modifier
-				.padding(bottom = 24.dp)
-				.background(PurpleVibrant.copy(alpha = 0.1f), RoundedCornerShape(999.dp))
-				.border(1.dp, PurpleVibrant.copy(alpha = 0.2f), RoundedCornerShape(999.dp))
-				.padding(horizontal = 12.dp, vertical = 4.dp)
-		) {
-			Row(
-				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.spacedBy(4.dp)
-			) {
-				Icon(
-					imageVector = Icons.Rounded.FlashOn,
-					contentDescription = null,
-					tint = PurpleVibrant,
-					modifier = Modifier.size(14.dp)
-				)
-				Text(
-					text = "ADVANCED MODE",
-					style = MaterialTheme.typography.labelSmall,
-					fontWeight = FontWeight.Black,
-					color = PurpleVibrant,
-					fontSize = 10.sp
-				)
-			}
-		}
+		Spacer(modifier = Modifier.height(24.dp))
 
 		Text(
 			text = "Advanced Mode\nAvailable",
@@ -591,72 +578,40 @@ private fun RootDetectionContent() {
 
 		Text(
 			text = "We detected root access on this device. This unlocks powerful privacy controls not available to standard users.",
-			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+			style = MaterialTheme.typography.bodyMedium,
+			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
 			textAlign = TextAlign.Center
 		)
 
 		Spacer(modifier = Modifier.height(32.dp))
 
-		Column(
-			verticalArrangement = Arrangement.spacedBy(12.dp),
-			modifier = Modifier.fillMaxWidth()
-		) {
-			FeatureRowCard(
-				title = "Auto-Guard",
-				description = "Auto-pause kill switches when you use camera or mic.",
-				icon = Icons.Rounded.AutoAwesome,
-				iconColor = AutoGuardPrimary
-			)
-		}
-	}
-}
-
-@Composable
-private fun FeatureGridCard(
-	title: String,
-	description: String,
-	icon: ImageVector,
-	iconColor: Color,
-	isPro: Boolean = false,
-	modifier: Modifier = Modifier
-) {
-	Box(
-		modifier = modifier
-			.clip(RoundedCornerShape(20.dp))
-			.background(MaterialTheme.colorScheme.surfaceVariant)
-			.padding(16.dp)
-	) {
-		if (isPro) {
-			PrivacifyBadge(
-				text = "PRO",
-				color = iconColor,
-				modifier = Modifier.align(Alignment.TopEnd)
-			)
-		}
-
-		Column {
-			PrivacifyIconBox(
-				icon = icon,
-				tint = iconColor,
-				background = iconColor.copy(alpha = 0.1f),
-				size = 48,
-				iconSize = 24
-			)
-			Spacer(modifier = Modifier.height(12.dp))
-			Text(
-				text = title,
-				style = MaterialTheme.typography.titleSmall,
-				fontWeight = FontWeight.Black,
-				color = MaterialTheme.colorScheme.onSurface
-			)
-			Spacer(modifier = Modifier.height(4.dp))
-			Text(
-				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-				lineHeight = 14.sp
-			)
+		PrivacifyExpressiveCard {
+			Row(
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(16.dp),
+				verticalAlignment = Alignment.CenterVertically,
+				horizontalArrangement = Arrangement.spacedBy(16.dp)
+			) {
+				PrivacifyIconBox(
+					icon = Icons.Rounded.AutoAwesome,
+					tint = AutoGuardPrimary,
+					background = AutoGuardPrimary.copy(alpha = 0.12f)
+				)
+				Column(modifier = Modifier.weight(1f)) {
+					Text(
+						text = "Auto-Guard",
+						style = MaterialTheme.typography.titleMedium,
+						fontWeight = FontWeight.Bold
+					)
+					Spacer(modifier = Modifier.height(2.dp))
+					Text(
+						text = "Auto-pause kill switches when you use camera or mic.",
+						style = MaterialTheme.typography.bodySmall,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
 		}
 	}
 }
@@ -667,113 +622,62 @@ private fun PermissionCard(
 	description: String,
 	icon: ImageVector,
 	isGranted: Boolean = false,
-	isEnabled: Boolean = true,
 	isAdvanced: Boolean = false,
 	onClick: () -> Unit = {}
 ) {
-	val backgroundColor = if (isAdvanced) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant
-	val borderColor = if (isAdvanced) OrangeVibrant.copy(alpha = 0.2f) else Color.Transparent
-
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(RoundedCornerShape(20.dp))
-			.background(backgroundColor)
-			.border(1.dp, borderColor, RoundedCornerShape(20.dp))
-			.then(if (isEnabled) Modifier.clickable(onClick = onClick) else Modifier)
-			.padding(16.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.spacedBy(16.dp)
+	PrivacifyExpressiveCard(
+		onClick = onClick
 	) {
-		PrivacifyIconBox(
-			icon = icon,
-			tint = if (isGranted) GreenVibrant else if (isAdvanced) OrangeVibrant else MaterialTheme.colorScheme.primary,
-			background = if (isGranted) GreenVibrant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-			size = 48,
-			iconSize = 24
-		)
-
-		Column(modifier = Modifier.weight(1f)) {
-			Row(
-				modifier = Modifier.fillMaxWidth(),
-				horizontalArrangement = Arrangement.SpaceBetween,
-				verticalAlignment = Alignment.CenterVertically
-			) {
-				Text(
-					text = title,
-					style = MaterialTheme.typography.titleMedium,
-					fontWeight = FontWeight.Black,
-					color = MaterialTheme.colorScheme.onSurface
-				)
-
-				if (isAdvanced) {
-					PrivacifyBadge(text = "ADVANCED", color = OrangeVibrant)
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(16.dp),
+			verticalAlignment = Alignment.CenterVertically,
+			horizontalArrangement = Arrangement.spacedBy(16.dp)
+		) {
+			PrivacifyIconBox(
+				icon = icon,
+				tint = if (isGranted) GreenVibrant else if (isAdvanced) OrangeVibrant else MaterialTheme.colorScheme.primary,
+				background = if (isGranted) GreenVibrant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+			)
+			Column(modifier = Modifier.weight(1f)) {
+				Row(
+					verticalAlignment = Alignment.CenterVertically,
+					horizontalArrangement = Arrangement.spacedBy(8.dp)
+				) {
+					Text(
+						text = title,
+						style = MaterialTheme.typography.titleMedium,
+						fontWeight = FontWeight.Bold,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+					if (isAdvanced) {
+						PrivacifyBadge(text = "ADVANCED", color = OrangeVibrant)
+					}
 				}
-
+				Spacer(modifier = Modifier.height(4.dp))
+				Text(
+					text = description,
+					style = MaterialTheme.typography.bodySmall,
+					color = MaterialTheme.colorScheme.onSurfaceVariant
+				)
+			}
+			Box(
+				modifier = Modifier
+					.width(48.dp)
+					.height(28.dp)
+					.clip(RoundedCornerShape(999.dp))
+					.background(if (isGranted) GreenVibrant else Color.Gray.copy(alpha = 0.3f))
+					.padding(2.dp),
+				contentAlignment = if (isGranted) Alignment.CenterEnd else Alignment.CenterStart
+			) {
 				Box(
 					modifier = Modifier
-						.width(48.dp)
-						.height(28.dp)
-						.clip(RoundedCornerShape(999.dp))
-						.background(if (isGranted) GreenVibrant else Color.Gray.copy(alpha = 0.3f))
-						.padding(2.dp),
-					contentAlignment = if (isGranted) Alignment.CenterEnd else Alignment.CenterStart
-				) {
-					Box(
-						modifier = Modifier
-							.size(24.dp)
-							.clip(CircleShape)
-							.background(Color.White)
-					)
-				}
+						.size(24.dp)
+						.clip(CircleShape)
+						.background(Color.White)
+				)
 			}
-			Spacer(modifier = Modifier.height(4.dp))
-			Text(
-				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
-			)
-		}
-	}
-}
-
-@Composable
-private fun FeatureRowCard(
-	title: String,
-	description: String,
-	icon: ImageVector,
-	iconColor: Color
-) {
-	Row(
-		modifier = Modifier
-			.fillMaxWidth()
-			.clip(ExpressiveLargeIncreased)
-			.background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-			.border(1.dp, Color.White.copy(alpha = 0.05f), ExpressiveLargeIncreased)
-			.padding(16.dp),
-		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.spacedBy(16.dp)
-	) {
-		PrivacifyIconBox(
-			icon = icon,
-			tint = iconColor,
-			background = iconColor.copy(alpha = 0.1f),
-			size = 40,
-			iconSize = 24
-		)
-
-		Column {
-			Text(
-				text = title,
-				style = MaterialTheme.typography.bodyMedium,
-				fontWeight = FontWeight.Bold,
-				color = MaterialTheme.colorScheme.onSurface
-			)
-			Text(
-				text = description,
-				style = MaterialTheme.typography.bodySmall,
-				color = MaterialTheme.colorScheme.onSurfaceVariant
-			)
 		}
 	}
 }
