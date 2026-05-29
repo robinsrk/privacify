@@ -2,8 +2,7 @@ package dev.robin.privacify.domain.onboarding
 
 enum class OnboardingStep {
 	Welcome,
-	FeaturesOverview,
+	Acknowledgement,
 	SystemCheck,
-	RootDetection
+	FeatureIntro
 }
-

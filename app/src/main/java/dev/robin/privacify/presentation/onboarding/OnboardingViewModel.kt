@@ -98,34 +98,35 @@ class OnboardingViewModel(
 
 	fun onWelcomeContinue() {
 		mutableState.update { current ->
-			current.copy(step = OnboardingStep.FeaturesOverview)
+			current.copy(step = OnboardingStep.Acknowledgement)
 		}
 	}
 
-	fun onFeaturesContinue() {
+	fun onAcknowledgementContinue() {
 		mutableState.update { current ->
 			current.copy(step = OnboardingStep.SystemCheck)
 		}
 	}
 
 	fun onSystemCheckContinue() {
-		val nextStep = if (state.value.isRootAvailable) {
-			OnboardingStep.RootDetection
-		} else {
-			null
-		}
-
-		if (nextStep != null) {
-			mutableState.update { current ->
-				current.copy(step = nextStep)
-			}
-		} else {
-			completeOnboarding()
+		mutableState.update { current ->
+			current.copy(step = OnboardingStep.FeatureIntro)
 		}
 	}
 
-	fun onRootDetectionContinue() {
+	fun onFeatureIntroContinue() {
 		completeOnboarding()
+	}
+
+	fun onBack() {
+		val currentStep = state.value.step
+		val previousStep = when (currentStep) {
+			OnboardingStep.Acknowledgement -> OnboardingStep.Welcome
+			OnboardingStep.SystemCheck -> OnboardingStep.Acknowledgement
+			OnboardingStep.FeatureIntro -> OnboardingStep.SystemCheck
+			else -> return
+		}
+		mutableState.update { it.copy(step = previousStep) }
 	}
 
 	private fun completeOnboarding() {
@@ -160,4 +161,3 @@ class OnboardingViewModel(
 		}
 	}
 }
-

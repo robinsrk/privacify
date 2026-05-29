@@ -9,15 +9,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,7 +36,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AdminPanelSettings
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Shield
@@ -47,9 +48,14 @@ import androidx.compose.material.icons.rounded.VideocamOff
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -100,217 +106,507 @@ fun OnboardingRoute(
 		return
 	}
 
-	val totalSteps = if (state.isRootAvailable) 4 else 3
-	val currentStep = state.step.ordinal
-
-	val buttonText: String = when (state.step) {
-		OnboardingStep.Welcome -> "Get Started"
-		OnboardingStep.FeaturesOverview -> "Continue"
-		OnboardingStep.SystemCheck -> "Continue"
-		OnboardingStep.RootDetection -> "Continue"
-	}
-
-	val canProceed: Boolean = when (state.step) {
-		OnboardingStep.SystemCheck -> state.usageAccessGranted
-		else -> true
-	}
-
-	val onContinue: () -> Unit = when (state.step) {
-		OnboardingStep.Welcome -> viewModel::onWelcomeContinue
-		OnboardingStep.FeaturesOverview -> viewModel::onFeaturesContinue
-		OnboardingStep.SystemCheck -> viewModel::onSystemCheckContinue
-		OnboardingStep.RootDetection -> viewModel::onRootDetectionContinue
-	}
-
 	Surface(
-		modifier = Modifier.fillMaxSize(),
+		modifier = Modifier
+			.fillMaxSize()
+			.statusBarsPadding(),
 		color = MaterialTheme.colorScheme.background
 	) {
-		Column(
-			modifier = Modifier.fillMaxSize()
-		) {
+		Column(modifier = Modifier.fillMaxSize()) {
 			Box(modifier = Modifier.weight(1f)) {
 				AnimatedContent(
 					targetState = state.step,
 					transitionSpec = {
 						val direction = if (targetState.ordinal > initialState.ordinal) 1 else -1
-						slideInVertically { it * direction } + fadeIn(tween(300)) togetherWith
-						slideOutVertically { -it * direction / 3 } + fadeOut(tween(200))
+						slideInHorizontally(
+							animationSpec = tween(350),
+							initialOffsetX = { fullWidth -> direction * fullWidth }
+						) + fadeIn(tween(250)) togetherWith
+						slideOutHorizontally(
+							animationSpec = tween(350),
+							targetOffsetX = { fullWidth -> -direction * fullWidth / 3 }
+						) + fadeOut(tween(200))
 					},
 					label = "onboarding_content"
 				) { step ->
 					when (step) {
-						OnboardingStep.Welcome -> WelcomeContent()
-						OnboardingStep.FeaturesOverview -> FeaturesContent(
-							onSkip = viewModel::onFeaturesContinue
+						OnboardingStep.Welcome -> WelcomeStepContent(
+							onContinue = viewModel::onWelcomeContinue
 						)
-						OnboardingStep.SystemCheck -> SystemCheckContent(
+						OnboardingStep.Acknowledgement -> AcknowledgementStepContent(
+							onBack = viewModel::onBack,
+							onContinue = viewModel::onAcknowledgementContinue
+						)
+						OnboardingStep.SystemCheck -> SystemCheckStepContent(
 							state = state,
-							onCheckPermissions = viewModel::checkPermissions
+							onCheckPermissions = viewModel::checkPermissions,
+							onBack = viewModel::onBack,
+							onContinue = viewModel::onSystemCheckContinue
 						)
-						OnboardingStep.RootDetection -> RootDetectionContent()
+						OnboardingStep.FeatureIntro -> FeatureIntroStepContent(
+							onBack = viewModel::onBack,
+							onContinue = viewModel::onFeatureIntroContinue
+						)
 					}
 				}
 			}
-
-			OnboardingBottomBar(
-				currentStep = currentStep,
-				totalSteps = totalSteps,
-				buttonText = buttonText,
-				buttonEnabled = canProceed,
-				onContinue = onContinue
-			)
 		}
 	}
 }
 
 @Composable
-private fun OnboardingBottomBar(
-	currentStep: Int,
-	totalSteps: Int,
+private fun StepNavigation(
+	showBack: Boolean,
+	onBack: () -> Unit,
 	buttonText: String,
-	buttonEnabled: Boolean,
 	onContinue: () -> Unit
 ) {
-	var pressed by remember { mutableStateOf(false) }
-	val buttonScale by animateFloatAsState(
-		targetValue = if (pressed) 0.94f else 1f,
-		animationSpec = spring(
-			dampingRatio = Spring.DampingRatioMediumBouncy,
-			stiffness = Spring.StiffnessMedium
-		),
-		label = "btn_scale"
-	)
-
-	Column(
+	Row(
 		modifier = Modifier
 			.fillMaxWidth()
-			.background(MaterialTheme.colorScheme.surface)
 			.navigationBarsPadding()
 			.padding(horizontal = 24.dp)
-			.padding(top = 12.dp, bottom = 8.dp),
-		horizontalAlignment = Alignment.CenterHorizontally
+			.padding(bottom = 16.dp),
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.spacedBy(16.dp)
 	) {
-		OnboardingPageIndicator(
-			currentStep = currentStep,
-			totalSteps = totalSteps
-		)
-
-		Spacer(modifier = Modifier.height(16.dp))
+		if (showBack) {
+			OutlinedButton(
+				onClick = onBack,
+				modifier = Modifier.size(56.dp),
+				shape = CircleShape,
+				colors = ButtonDefaults.outlinedButtonColors(
+					contentColor = MaterialTheme.colorScheme.onSurface
+				),
+				border = ButtonDefaults.outlinedButtonBorder
+			) {
+				Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+			}
+		}
 
 		Button(
-			onClick = {
-				pressed = true
-				onContinue()
-			},
-			enabled = buttonEnabled,
-			shape = RoundedCornerShape(999.dp),
+			onClick = onContinue,
 			modifier = Modifier
-				.fillMaxWidth()
-				.height(52.dp)
-				.scale(buttonScale),
+				.weight(1f)
+				.height(56.dp),
+			shape = RoundedCornerShape(16.dp),
 			colors = ButtonDefaults.buttonColors(
 				containerColor = MaterialTheme.colorScheme.primary,
-				contentColor = MaterialTheme.colorScheme.onPrimary,
-				disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-				disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+				contentColor = MaterialTheme.colorScheme.onPrimary
 			)
 		) {
 			Text(
 				text = buttonText,
-				style = MaterialTheme.typography.labelLarge,
-				fontWeight = FontWeight.Black
+				fontWeight = FontWeight.Black,
+				fontSize = 16.sp
 			)
+			Spacer(Modifier.width(8.dp))
+			Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
 		}
 	}
 }
 
 @Composable
-private fun OnboardingPageIndicator(
-	currentStep: Int,
-	totalSteps: Int
+private fun WelcomeStepContent(
+	onContinue: () -> Unit
 ) {
-	Row(
-		horizontalArrangement = Arrangement.Center,
-		verticalAlignment = Alignment.CenterVertically
-	) {
-		repeat(totalSteps) { index ->
-			val isActive = index == currentStep
+	var scaled by remember { mutableStateOf(false) }
+	var expanded by remember { mutableStateOf(false) }
+	val languages = listOf("System", "English")
+	var selectedLanguage by remember { mutableStateOf(languages[0]) }
 
-			val width by animateDpAsState(
-				targetValue = if (isActive) 32.dp else 8.dp,
-				animationSpec = tween(400),
-				label = "dot_width"
-			)
-
-			Box(
-				modifier = Modifier
-					.width(width)
-					.height(8.dp)
-					.clip(CircleShape)
-					.background(
-						if (isActive) MaterialTheme.colorScheme.primary
-						else MaterialTheme.colorScheme.outlineVariant
-					)
-			)
-
-			if (index < totalSteps - 1) {
-				Spacer(modifier = Modifier.width(6.dp))
-			}
-		}
-	}
-}
-
-@Composable
-private fun WelcomeContent() {
 	Column(
 		modifier = Modifier
 			.fillMaxSize()
-			.padding(horizontal = 32.dp),
-		horizontalAlignment = Alignment.CenterHorizontally,
-		verticalArrangement = Arrangement.Center
+			.navigationBarsPadding()
+			.padding(horizontal = 24.dp),
+		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		Box(
-			modifier = Modifier
-				.size(120.dp)
-				.clip(RoundedCornerShape(28.dp))
-				.background(
-					MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-				),
-			contentAlignment = Alignment.Center
-		) {
-			Icon(
-				imageVector = Icons.Rounded.Shield,
-				contentDescription = null,
-				tint = MaterialTheme.colorScheme.primary,
-				modifier = Modifier.size(60.dp)
-			)
+		Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+			Column(horizontalAlignment = Alignment.CenterHorizontally) {
+				Box(
+					modifier = Modifier
+						.size(120.dp)
+						.clip(RoundedCornerShape(28.dp))
+						.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+						.scale(if (scaled) 0.85f else 1f)
+						.clickable { scaled = !scaled },
+					contentAlignment = Alignment.Center
+				) {
+					Icon(
+						imageVector = Icons.Rounded.Shield,
+						contentDescription = null,
+						tint = MaterialTheme.colorScheme.primary,
+						modifier = Modifier.size(60.dp)
+					)
+				}
+
+				Spacer(Modifier.height(32.dp))
+
+				Text(
+					text = "Welcome to\nPrivacify",
+					style = MaterialTheme.typography.headlineLarge,
+					fontWeight = FontWeight(800),
+					color = MaterialTheme.colorScheme.onBackground,
+					textAlign = TextAlign.Center
+				)
+
+				Spacer(Modifier.height(8.dp))
+
+				Text(
+					text = "by Robin",
+					style = MaterialTheme.typography.bodyLarge,
+					color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+					textAlign = TextAlign.Center
+				)
+
+				Spacer(Modifier.height(32.dp))
+
+				Row(
+					modifier = Modifier
+						.clip(RoundedCornerShape(16.dp))
+						.background(MaterialTheme.colorScheme.surfaceContainerHighest)
+						.clickable { expanded = true }
+						.padding(horizontal = 16.dp, vertical = 12.dp),
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					Icon(
+						imageVector = Icons.Rounded.Language,
+						contentDescription = null,
+						tint = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+					Spacer(Modifier.width(12.dp))
+					Text(
+						text = selectedLanguage,
+						fontWeight = FontWeight.ExtraBold,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+					Spacer(Modifier.weight(1f))
+					Icon(
+						imageVector = Icons.Rounded.ExpandMore,
+						contentDescription = null,
+						tint = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+
+				DropdownMenu(
+					expanded = expanded,
+					onDismissRequest = { expanded = false }
+				) {
+					languages.forEach { lang ->
+						DropdownMenuItem(
+							text = { Text(lang) },
+							onClick = {
+								selectedLanguage = lang
+								expanded = false
+							}
+						)
+					}
+				}
+			}
 		}
 
-		Spacer(modifier = Modifier.height(32.dp))
+		Button(
+			onClick = onContinue,
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(56.dp),
+			shape = RoundedCornerShape(16.dp),
+			colors = ButtonDefaults.buttonColors(
+				containerColor = MaterialTheme.colorScheme.primary,
+				contentColor = MaterialTheme.colorScheme.onPrimary
+			)
+		) {
+			Text(
+				text = "Let's begin",
+				fontWeight = FontWeight.Black,
+				fontSize = 16.sp
+			)
+			Spacer(Modifier.width(8.dp))
+			Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
+		}
 
-		Text(
-			text = "Welcome to\nPrivacify",
-			style = MaterialTheme.typography.displaySmall,
-			fontWeight = FontWeight.Black,
-			color = MaterialTheme.colorScheme.onBackground,
-			textAlign = TextAlign.Center
-		)
+		Spacer(Modifier.height(16.dp))
+	}
+}
 
-		Spacer(modifier = Modifier.height(12.dp))
+@Composable
+private fun AcknowledgementStepContent(
+	onBack: () -> Unit,
+	onContinue: () -> Unit
+) {
+	Column(modifier = Modifier.fillMaxSize()) {
+		Column(
+			modifier = Modifier
+				.weight(1f)
+				.verticalScroll(rememberScrollState())
+				.padding(horizontal = 24.dp)
+		) {
+			Spacer(Modifier.height(24.dp))
 
-		Text(
-			text = "Your ultimate privacy control center.\nMonitor, manage, and protect your data.",
-			style = MaterialTheme.typography.bodyLarge,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-			textAlign = TextAlign.Center
+			Text(
+				text = "Privacy Disclaimer",
+				style = MaterialTheme.typography.headlineLarge,
+				fontWeight = FontWeight(800),
+				color = MaterialTheme.colorScheme.onBackground
+			)
+
+			Spacer(Modifier.height(12.dp))
+
+			Text(
+				text = "Privacify requires certain permissions to monitor and block unauthorized access to your sensors and data.",
+				style = MaterialTheme.typography.bodyLarge,
+				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+			)
+
+			Spacer(Modifier.height(24.dp))
+
+			PrivacifyExpressiveCard {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(16.dp)
+				) {
+					Text(
+						text = "What we need:",
+						style = MaterialTheme.typography.titleMedium,
+						fontWeight = FontWeight.Bold,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+					Spacer(Modifier.height(8.dp))
+					Text(
+						text = "• Usage Access — to detect which apps are currently active\n" +
+								"• Notifications — to alert you when sensors are accessed\n" +
+								"• Root/Shizuku — optional, for advanced system-level protection",
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
+
+			Spacer(Modifier.height(16.dp))
+
+			PrivacifyExpressiveCard {
+				Column(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(16.dp)
+				) {
+					Text(
+						text = "Your privacy matters:",
+						style = MaterialTheme.typography.titleMedium,
+						fontWeight = FontWeight.Bold,
+						color = MaterialTheme.colorScheme.onSurface
+					)
+					Spacer(Modifier.height(8.dp))
+					Text(
+						text = "We do not collect, store, or share any personal data. All monitoring happens locally on your device.",
+						style = MaterialTheme.typography.bodyMedium,
+						color = MaterialTheme.colorScheme.onSurfaceVariant
+					)
+				}
+			}
+
+			Spacer(Modifier.height(24.dp))
+		}
+
+		StepNavigation(
+			showBack = true,
+			onBack = onBack,
+			buttonText = "I understand",
+			onContinue = onContinue
 		)
 	}
 }
 
 @Composable
-private fun FeaturesContent(
-	onSkip: () -> Unit
+private fun SystemCheckStepContent(
+	state: OnboardingUiState,
+	onCheckPermissions: (Context) -> Unit,
+	onBack: () -> Unit,
+	onContinue: () -> Unit
+) {
+	val context = LocalContext.current
+	val lifecycleOwner = LocalLifecycleOwner.current
+
+	DisposableEffect(lifecycleOwner) {
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME) {
+				onCheckPermissions(context)
+			}
+		}
+		lifecycleOwner.lifecycle.addObserver(observer)
+		onDispose {
+			lifecycleOwner.lifecycle.removeObserver(observer)
+		}
+	}
+
+	val notificationLauncher = rememberLauncherForActivityResult(
+		contract = ActivityResultContracts.RequestPermission()
+	) {
+		onCheckPermissions(context)
+	}
+
+	Column(modifier = Modifier.fillMaxSize()) {
+		Column(
+			modifier = Modifier
+				.weight(1f)
+				.verticalScroll(rememberScrollState())
+				.padding(horizontal = 24.dp)
+		) {
+			Spacer(Modifier.height(24.dp))
+
+			Text(
+				text = "Required Access",
+				style = MaterialTheme.typography.headlineLarge,
+				fontWeight = FontWeight(800),
+				color = MaterialTheme.colorScheme.onBackground
+			)
+
+			Spacer(Modifier.height(12.dp))
+
+			Text(
+				text = "Grant the following permissions for full functionality.",
+				style = MaterialTheme.typography.bodyLarge,
+				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+			)
+
+			Spacer(Modifier.height(24.dp))
+
+			Column(
+				modifier = Modifier
+					.clip(MaterialTheme.shapes.extraLarge)
+					.background(MaterialTheme.colorScheme.surfaceBright),
+				verticalArrangement = Arrangement.spacedBy(0.dp)
+			) {
+				PermissionToggleItem(
+					icon = Icons.Rounded.AdminPanelSettings,
+					title = "Usage Access",
+					subtitle = "Detect active apps to apply privacy rules",
+					checked = state.usageAccessGranted,
+					onClick = {
+						if (!state.usageAccessGranted) {
+							val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+							context.startActivity(intent)
+						}
+					}
+				)
+
+				if (Build.VERSION.SDK_INT >= 33) {
+					PermissionToggleItem(
+						icon = Icons.Rounded.Notifications,
+						title = "Notifications",
+						subtitle = "Get alerts when sensors are accessed",
+						checked = state.notificationPermissionGranted,
+						onClick = {
+							if (!state.notificationPermissionGranted) {
+								notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+							}
+						}
+					)
+				}
+
+				if (state.isRootAvailable) {
+					PermissionToggleItem(
+						icon = Icons.Rounded.AdminPanelSettings,
+						title = "Root / Shizuku",
+						subtitle = "Enable deep system-level protection",
+						checked = state.isRootGranted,
+						isAdvanced = true,
+						onClick = {
+							if (state.isRootGranted) return@PermissionToggleItem
+							Toast.makeText(
+								context,
+								"Open Shizuku app to grant permission",
+								Toast.LENGTH_SHORT
+							).show()
+						}
+					)
+				}
+			}
+
+			Spacer(Modifier.height(24.dp))
+		}
+
+		StepNavigation(
+			showBack = true,
+			onBack = onBack,
+			buttonText = "All set",
+			onContinue = onContinue
+		)
+	}
+}
+
+@Composable
+private fun PermissionToggleItem(
+	icon: ImageVector,
+	title: String,
+	subtitle: String,
+	checked: Boolean,
+	isAdvanced: Boolean = false,
+	onClick: () -> Unit
+) {
+	val iconTint = if (checked) GreenVibrant else MaterialTheme.colorScheme.onSurfaceVariant
+	val iconBg = if (checked) GreenVibrant.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceContainerHighest
+
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.clickable { onClick() }
+			.padding(horizontal = 16.dp, vertical = 12.dp),
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		PrivacifyIconBox(
+			icon = icon,
+			tint = iconTint,
+			background = iconBg
+		)
+		Spacer(Modifier.width(16.dp))
+		Column(Modifier.weight(1f)) {
+			Row(verticalAlignment = Alignment.CenterVertically) {
+				Text(
+					text = title,
+					style = MaterialTheme.typography.titleMedium,
+					fontWeight = FontWeight.Bold,
+					color = MaterialTheme.colorScheme.onSurface
+				)
+				if (isAdvanced) {
+					Spacer(Modifier.width(8.dp))
+					PrivacifyBadge(text = "ADVANCED", color = OrangeVibrant)
+				}
+			}
+			Spacer(Modifier.height(2.dp))
+			Text(
+				text = subtitle,
+				style = MaterialTheme.typography.bodySmall,
+				color = MaterialTheme.colorScheme.onSurfaceVariant
+			)
+		}
+		Spacer(Modifier.width(16.dp))
+		Switch(
+			checked = checked,
+			onCheckedChange = { onClick() },
+			colors = SwitchDefaults.colors(
+				checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+				checkedTrackColor = MaterialTheme.colorScheme.primary,
+				uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+				uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest
+			)
+		)
+	}
+}
+
+private data class FeatureItem(
+	val title: String,
+	val description: String,
+	val icon: ImageVector,
+	val color: Color
+)
+
+@Composable
+private fun FeatureIntroStepContent(
+	onBack: () -> Unit,
+	onContinue: () -> Unit
 ) {
 	val features = listOf(
 		FeatureItem(
@@ -339,345 +635,74 @@ private fun FeaturesContent(
 		)
 	)
 
-	Column(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(horizontal = 24.dp)
-			.verticalScroll(rememberScrollState())
-	) {
-		Row(
+	Column(modifier = Modifier.fillMaxSize()) {
+		Column(
 			modifier = Modifier
-				.fillMaxWidth()
-				.padding(top = 20.dp),
-			horizontalArrangement = Arrangement.End
+				.weight(1f)
+				.verticalScroll(rememberScrollState())
+				.padding(horizontal = 24.dp)
 		) {
+			Spacer(Modifier.height(24.dp))
+
 			Text(
-				text = "Skip",
-				style = MaterialTheme.typography.labelLarge,
-				fontWeight = FontWeight.Bold,
-				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-				modifier = Modifier.clickable { onSkip() }
+				text = "Feature\nIntroduction",
+				style = MaterialTheme.typography.headlineLarge,
+				fontWeight = FontWeight(800),
+				color = MaterialTheme.colorScheme.onBackground
 			)
-		}
 
-		Spacer(modifier = Modifier.height(24.dp))
+			Spacer(Modifier.height(12.dp))
 
-		Text(
-			text = "Features\nOverview",
-			style = MaterialTheme.typography.headlineLarge,
-			fontWeight = FontWeight.Black,
-			color = MaterialTheme.colorScheme.onBackground
-		)
+			Text(
+				text = "Protect your digital life with our comprehensive suite of privacy tools.",
+				style = MaterialTheme.typography.bodyLarge,
+				color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+			)
 
-		Spacer(modifier = Modifier.height(8.dp))
+			Spacer(Modifier.height(24.dp))
 
-		Text(
-			text = "Protect your digital life with our comprehensive suite of privacy tools.",
-			style = MaterialTheme.typography.bodyMedium,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-		)
-
-		Spacer(modifier = Modifier.height(20.dp))
-
-		Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-			features.forEach { feature ->
-				PrivacifyExpressiveCard {
-					Row(
-						modifier = Modifier
-							.fillMaxWidth()
-							.padding(16.dp),
-						verticalAlignment = Alignment.CenterVertically,
-						horizontalArrangement = Arrangement.spacedBy(16.dp)
-					) {
-						PrivacifyIconBox(
-							icon = feature.icon,
-							tint = feature.color,
-							background = feature.color.copy(alpha = 0.12f)
-						)
-						Column(modifier = Modifier.weight(1f)) {
-							Text(
-								text = feature.title,
-								style = MaterialTheme.typography.titleMedium,
-								fontWeight = FontWeight.Bold,
-								color = MaterialTheme.colorScheme.onSurface
+			Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+				features.forEach { feature ->
+					PrivacifyExpressiveCard {
+						Row(
+							modifier = Modifier
+								.fillMaxWidth()
+								.padding(16.dp),
+							verticalAlignment = Alignment.CenterVertically,
+							horizontalArrangement = Arrangement.spacedBy(16.dp)
+						) {
+							PrivacifyIconBox(
+								icon = feature.icon,
+								tint = feature.color,
+								background = feature.color.copy(alpha = 0.12f)
 							)
-							Spacer(modifier = Modifier.height(2.dp))
-							Text(
-								text = feature.description,
-								style = MaterialTheme.typography.bodySmall,
-								color = MaterialTheme.colorScheme.onSurfaceVariant
-							)
+							Column(modifier = Modifier.weight(1f)) {
+								Text(
+									text = feature.title,
+									style = MaterialTheme.typography.titleMedium,
+									fontWeight = FontWeight.Bold,
+									color = MaterialTheme.colorScheme.onSurface
+								)
+								Spacer(Modifier.height(2.dp))
+								Text(
+									text = feature.description,
+									style = MaterialTheme.typography.bodySmall,
+									color = MaterialTheme.colorScheme.onSurfaceVariant
+								)
+							}
 						}
 					}
 				}
 			}
+
+			Spacer(Modifier.height(24.dp))
 		}
 
-		Spacer(modifier = Modifier.height(24.dp))
-	}
-}
-
-private data class FeatureItem(
-	val title: String,
-	val description: String,
-	val icon: ImageVector,
-	val color: Color
-)
-
-@Composable
-private fun SystemCheckContent(
-	state: OnboardingUiState,
-	onCheckPermissions: (Context) -> Unit
-) {
-	val context = LocalContext.current
-	val lifecycleOwner = LocalLifecycleOwner.current
-
-	DisposableEffect(lifecycleOwner) {
-		val observer = LifecycleEventObserver { _, event ->
-			if (event == Lifecycle.Event.ON_RESUME) {
-				onCheckPermissions(context)
-			}
-		}
-		lifecycleOwner.lifecycle.addObserver(observer)
-		onDispose {
-			lifecycleOwner.lifecycle.removeObserver(observer)
-		}
-	}
-
-	val notificationLauncher = rememberLauncherForActivityResult(
-		contract = ActivityResultContracts.RequestPermission()
-	) {
-		onCheckPermissions(context)
-	}
-
-	Column(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(horizontal = 24.dp)
-			.verticalScroll(rememberScrollState())
-	) {
-		Spacer(modifier = Modifier.height(24.dp))
-
-		Text(
-			text = "Required Access",
-			style = MaterialTheme.typography.headlineSmall,
-			fontWeight = FontWeight.Black,
-			color = MaterialTheme.colorScheme.onBackground
+		StepNavigation(
+			showBack = true,
+			onBack = onBack,
+			buttonText = "Let me in",
+			onContinue = onContinue
 		)
-
-		Spacer(modifier = Modifier.height(8.dp))
-
-		Text(
-			text = "To protect your privacy, we need the following permissions to monitor traffic and block trackers.",
-			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-		)
-
-		Spacer(modifier = Modifier.height(24.dp))
-
-		Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-			PermissionCard(
-				title = "Usage Access",
-				description = "Allows app to detect which apps are currently active to apply privacy rules in real-time.",
-				icon = Icons.Rounded.AdminPanelSettings,
-				isGranted = state.usageAccessGranted,
-				onClick = {
-					if (!state.usageAccessGranted) {
-						val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
-						context.startActivity(intent)
-					}
-				}
-			)
-
-			if (Build.VERSION.SDK_INT >= 33) {
-				PermissionCard(
-					title = "Notifications",
-					description = "Get alerts when apps access your camera or microphone.",
-					icon = Icons.Rounded.Notifications,
-					isGranted = state.notificationPermissionGranted,
-					onClick = {
-						if (!state.notificationPermissionGranted) {
-							notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-						}
-					}
-				)
-			}
-
-			if (state.isRootAvailable) {
-				PermissionCard(
-					title = "Root/Shizuku Access",
-					description = "Optional. Enables deep system control and tracker blocking.",
-					icon = Icons.Rounded.AdminPanelSettings,
-					isGranted = state.isRootGranted,
-					isAdvanced = true,
-					onClick = {
-						if (!state.isRootGranted) {
-							Toast.makeText(
-								context,
-								"Open Shizuku app to grant permission",
-								Toast.LENGTH_SHORT
-							).show()
-						}
-					}
-				)
-			}
-		}
-
-		Spacer(modifier = Modifier.height(8.dp))
-
-		Text(
-			text = "Ask me later",
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(vertical = 12.dp)
-				.clickable { },
-			style = MaterialTheme.typography.bodySmall,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-			textAlign = TextAlign.Center
-		)
-
-		Spacer(modifier = Modifier.height(8.dp))
-	}
-}
-
-@Composable
-private fun RootDetectionContent() {
-	Column(
-		modifier = Modifier
-			.fillMaxSize()
-			.padding(horizontal = 24.dp),
-		horizontalAlignment = Alignment.CenterHorizontally,
-		verticalArrangement = Arrangement.Center
-	) {
-		Box(
-			modifier = Modifier
-				.size(128.dp)
-				.clip(RoundedCornerShape(28.dp))
-				.background(PurpleVibrant.copy(alpha = 0.1f)),
-			contentAlignment = Alignment.Center
-		) {
-			Icon(
-				imageVector = Icons.Rounded.AdminPanelSettings,
-				contentDescription = null,
-				tint = PurpleVibrant,
-				modifier = Modifier.size(64.dp)
-			)
-		}
-
-		Spacer(modifier = Modifier.height(24.dp))
-
-		Text(
-			text = "Advanced Mode\nAvailable",
-			style = MaterialTheme.typography.headlineSmall,
-			fontWeight = FontWeight.Black,
-			color = MaterialTheme.colorScheme.onBackground,
-			textAlign = TextAlign.Center
-		)
-
-		Spacer(modifier = Modifier.height(8.dp))
-
-		Text(
-			text = "We detected root access on this device. This unlocks powerful privacy controls not available to standard users.",
-			style = MaterialTheme.typography.bodyMedium,
-			color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-			textAlign = TextAlign.Center
-		)
-
-		Spacer(modifier = Modifier.height(32.dp))
-
-		PrivacifyExpressiveCard {
-			Row(
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(16.dp),
-				verticalAlignment = Alignment.CenterVertically,
-				horizontalArrangement = Arrangement.spacedBy(16.dp)
-			) {
-				PrivacifyIconBox(
-					icon = Icons.Rounded.AutoAwesome,
-					tint = AutoGuardPrimary,
-					background = AutoGuardPrimary.copy(alpha = 0.12f)
-				)
-				Column(modifier = Modifier.weight(1f)) {
-					Text(
-						text = "Auto-Guard",
-						style = MaterialTheme.typography.titleMedium,
-						fontWeight = FontWeight.Bold
-					)
-					Spacer(modifier = Modifier.height(2.dp))
-					Text(
-						text = "Auto-pause kill switches when you use camera or mic.",
-						style = MaterialTheme.typography.bodySmall,
-						color = MaterialTheme.colorScheme.onSurfaceVariant
-					)
-				}
-			}
-		}
-	}
-}
-
-@Composable
-private fun PermissionCard(
-	title: String,
-	description: String,
-	icon: ImageVector,
-	isGranted: Boolean = false,
-	isAdvanced: Boolean = false,
-	onClick: () -> Unit = {}
-) {
-	PrivacifyExpressiveCard(
-		onClick = onClick
-	) {
-		Row(
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(16.dp),
-			verticalAlignment = Alignment.CenterVertically,
-			horizontalArrangement = Arrangement.spacedBy(16.dp)
-		) {
-			PrivacifyIconBox(
-				icon = icon,
-				tint = if (isGranted) GreenVibrant else if (isAdvanced) OrangeVibrant else MaterialTheme.colorScheme.primary,
-				background = if (isGranted) GreenVibrant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-			)
-			Column(modifier = Modifier.weight(1f)) {
-				Row(
-					verticalAlignment = Alignment.CenterVertically,
-					horizontalArrangement = Arrangement.spacedBy(8.dp)
-				) {
-					Text(
-						text = title,
-						style = MaterialTheme.typography.titleMedium,
-						fontWeight = FontWeight.Bold,
-						color = MaterialTheme.colorScheme.onSurface
-					)
-					if (isAdvanced) {
-						PrivacifyBadge(text = "ADVANCED", color = OrangeVibrant)
-					}
-				}
-				Spacer(modifier = Modifier.height(4.dp))
-				Text(
-					text = description,
-					style = MaterialTheme.typography.bodySmall,
-					color = MaterialTheme.colorScheme.onSurfaceVariant
-				)
-			}
-			Box(
-				modifier = Modifier
-					.width(48.dp)
-					.height(28.dp)
-					.clip(RoundedCornerShape(999.dp))
-					.background(if (isGranted) GreenVibrant else Color.Gray.copy(alpha = 0.3f))
-					.padding(2.dp),
-				contentAlignment = if (isGranted) Alignment.CenterEnd else Alignment.CenterStart
-			) {
-				Box(
-					modifier = Modifier
-						.size(24.dp)
-						.clip(CircleShape)
-						.background(Color.White)
-				)
-			}
-		}
 	}
 }
