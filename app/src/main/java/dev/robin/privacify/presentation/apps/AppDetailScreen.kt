@@ -15,10 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Dangerous
@@ -313,6 +317,88 @@ private fun PermissionsSection(
 	}
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppDetailBottomSheet(
+	packageName: String,
+	onDismiss: () -> Unit
+) {
+	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+	val context = LocalContext.current
+	val viewModel: AppDetailViewModel = viewModel(
+		factory = AppDetailViewModel.factory(packageName, context)
+	)
+	val app by viewModel.state.collectAsState()
+	val isRooted by viewModel.isRooted.collectAsState()
+	val actionResult by viewModel.actionResult.collectAsState()
+
+	LaunchedEffect(actionResult) {
+		actionResult?.let { msg ->
+			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+			viewModel.clearActionResult()
+		}
+	}
+
+	ModalBottomSheet(
+		onDismissRequest = onDismiss,
+		sheetState = sheetState,
+		shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+		containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+	) {
+		Column(
+			modifier = Modifier
+				.fillMaxWidth()
+				.verticalScroll(rememberScrollState())
+				.padding(horizontal = 16.dp, vertical = 8.dp),
+			verticalArrangement = Arrangement.spacedBy(16.dp)
+		) {
+			Box(
+				modifier = Modifier
+					.align(Alignment.CenterHorizontally)
+					.width(32.dp)
+					.height(4.dp)
+					.clip(RoundedCornerShape(999.dp))
+					.background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+			)
+			Spacer(modifier = Modifier.height(8.dp))
+
+			val current = app
+			if (current != null) {
+				AppDetailContent(
+					app = current,
+					isRooted = isRooted,
+					onAction = { action ->
+						when (action) {
+							"revoke" -> viewModel.forceRevokePermissions()
+							"freeze" -> viewModel.freezeApp()
+							"sensors" -> viewModel.blockSensorAccess()
+						}
+					}
+				)
+			}
+			Spacer(modifier = Modifier.height(24.dp))
+		}
+	}
+}
+
+@Composable
+private fun AppDetailContent(
+	app: AppDetailInfo,
+	isRooted: Boolean = false,
+	onAction: (String) -> Unit
+) {
+	val riskColor = when (app.riskLevel) {
+		AppRiskLevel.High -> RedVibrant
+		AppRiskLevel.Medium -> OrangeVibrant
+		AppRiskLevel.Low -> GreenVibrant
+	}
+
+	Header(app, riskColor)
+	ActivityInsights(app)
+	PermissionsSection(app)
+	AdvancedControls(isRooted = isRooted, onAction = onAction)
+}
+
 @Composable
 private fun PermissionRow(
 	title: String,
@@ -487,7 +573,6 @@ private fun AdvancedActionCard(
 			icon = icon,
 			tint = RedVibrant,
 			background = RedVibrant.copy(alpha = 0.12f),
-			size = 40,
 			iconSize = 20
 		)
 		Column(modifier = Modifier.weight(1f)) {

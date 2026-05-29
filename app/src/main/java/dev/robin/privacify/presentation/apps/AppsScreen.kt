@@ -31,6 +31,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,20 +45,26 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.domain.apps.AppPrivacyInfo
 import dev.robin.privacify.domain.apps.AppRiskLevel
+import dev.robin.privacify.presentation.apps.AppDetailBottomSheet
 import dev.robin.privacify.ui.components.PrivacifyBadge
 import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
-import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
 import dev.robin.privacify.ui.theme.GreenVibrant
 import dev.robin.privacify.ui.theme.OrangeVibrant
 import dev.robin.privacify.ui.theme.RedVibrant
 
 @Composable
-fun AppsScreen(
-	onAppSelected: (AppPrivacyInfo) -> Unit = {}
-) {
+fun AppsScreen() {
 	val context = LocalContext.current
 	val viewModel: AppsViewModel = viewModel(factory = AppsViewModel.factory(context))
 	val state by viewModel.state.collectAsState()
+	var selectedApp by remember { mutableStateOf<AppPrivacyInfo?>(null) }
+
+	selectedApp?.let { app ->
+		AppDetailBottomSheet(
+			packageName = app.packageName,
+			onDismiss = { selectedApp = null }
+		)
+	}
 
 	Surface(
 		modifier = Modifier.fillMaxSize(),
@@ -89,7 +98,7 @@ fun AppsScreen(
 					value = state.query,
 					onValueChange = { viewModel.onQueryChanged(it) },
 					modifier = Modifier.fillMaxWidth(),
-					shape = ExpressiveLargeIncreased,
+					shape = MaterialTheme.shapes.large,
 					singleLine = true,
 					placeholder = {
 						Text(text = "Search apps or permissions")
@@ -155,10 +164,10 @@ fun AppsScreen(
 				items(
 					items = state.filteredApps,
 					key = { it.packageName }
-				) { app ->
+				) 				{ app ->
 					AppRow(
 						app = app,
-						onClick = { onAppSelected(app) }
+						onClick = { selectedApp = app }
 					)
 				}
 				item {
@@ -176,12 +185,12 @@ private fun FilterChip(
 	onClick: () -> Unit
 ) {
 	val bgColor by animateColorAsState(
-		targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+		targetValue = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceBright,
 		label = "chip_bg"
 	)
 	Box(
 		modifier = Modifier
-			.clip(ExpressiveLargeIncreased)
+			.clip(RoundedCornerShape(999.dp))
 			.background(bgColor)
 			.clickable { onClick() }
 			.padding(horizontal = 16.dp, vertical = 10.dp)
@@ -217,9 +226,9 @@ private fun AppRow(
 		) {
 			Box(
 				modifier = Modifier
-					.size(48.dp)
-					.clip(ExpressiveLargeIncreased)
-					.background(riskColor.copy(alpha = 0.15f)),
+					.size(40.dp)
+					.clip(CircleShape)
+					.background(riskColor.copy(alpha = 0.12f)),
 				contentAlignment = Alignment.Center
 			) {
 				Text(

@@ -96,7 +96,7 @@ class AnalyticsViewModel(
 			return object : ViewModelProvider.Factory {
 				@Suppress("UNCHECKED_CAST")
 				override fun <T : ViewModel> create(modelClass: Class<T>): T {
-					val scanner = SystemPermissionScanner(context.applicationContext)
+					val scanner = SystemPermissionScanner.getInstance(context)
 					return AnalyticsViewModel(
 						scanner = scanner
 					) as T

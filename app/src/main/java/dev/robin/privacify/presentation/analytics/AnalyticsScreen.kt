@@ -2,6 +2,7 @@ package dev.robin.privacify.presentation.analytics
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +33,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.ui.components.PrivacifyBadge
 import dev.robin.privacify.ui.components.PrivacifyExpressiveCard
 import dev.robin.privacify.ui.theme.BlueVibrant
-import dev.robin.privacify.ui.theme.ExpressiveLargeIncreased
 import dev.robin.privacify.ui.theme.GreenVibrant
 import dev.robin.privacify.ui.theme.OrangeVibrant
 import dev.robin.privacify.ui.theme.PurpleVibrant
@@ -148,14 +148,14 @@ private fun PermissionBar(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(10.dp)
-				.clip(MaterialTheme.shapes.extraSmall)
-				.background(MaterialTheme.colorScheme.surfaceVariant)
+				.clip(MaterialTheme.shapes.small)
+				.background(MaterialTheme.colorScheme.surfaceBright)
 		) {
 			Box(
 				modifier = Modifier
 					.fillMaxWidth(count.toFloat() / maxCount)
 					.height(10.dp)
-					.clip(MaterialTheme.shapes.extraSmall)
+					.clip(MaterialTheme.shapes.small)
 					.background(
 						Brush.horizontalGradient(
 							listOf(color, color.copy(alpha = 0.7f))
@@ -286,7 +286,7 @@ private fun HighRiskRow(
 		Box(
 			modifier = Modifier
 				.size(40.dp)
-				.clip(ExpressiveLargeIncreased)
+				.clip(CircleShape)
 				.background(RedVibrant.copy(alpha = 0.15f)),
 			contentAlignment = Alignment.Center
 		) {
