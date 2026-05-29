@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,9 +44,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.robin.privacify.core.provider.ProFeature
 import dev.robin.privacify.ui.components.PrivacifyAutoGuardCard
@@ -71,8 +75,15 @@ fun SettingsScreen() {
 	val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(context))
 	val state by viewModel.state.collectAsState()
 
-	LaunchedEffect(Unit) {
-		viewModel.refreshShizukuStatus(context)
+	val lifecycleOwner = LocalLifecycleOwner.current
+	DisposableEffect(lifecycleOwner) {
+		val observer = LifecycleEventObserver { _, event ->
+			if (event == Lifecycle.Event.ON_RESUME) {
+				viewModel.refreshRuntimeStatus()
+			}
+		}
+		lifecycleOwner.lifecycle.addObserver(observer)
+		onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
 	}
 
 	Surface(
@@ -112,7 +123,7 @@ fun SettingsScreen() {
 				context = context,
 				state = state,
 				onShellTypeChange = viewModel::setShellType,
-				onRefreshShizuku = { viewModel.refreshShizukuStatus(context) },
+				onRefreshRuntimeStatus = { viewModel.refreshRuntimeStatus() },
 				onRequestShizukuPermission = { viewModel.requestShizukuPermission() }
 			)
 			AboutSection()
@@ -285,7 +296,7 @@ private fun AdvancedSection(
 	context: android.content.Context,
 	state: SettingsUiState,
 	onShellTypeChange: (String) -> Unit,
-	onRefreshShizuku: () -> Unit,
+	onRefreshRuntimeStatus: () -> Unit,
 	onRequestShizukuPermission: () -> Unit
 ) {
 	val shellOptions = listOf("Auto", "Root", "Shizuku")
@@ -308,15 +319,19 @@ private fun AdvancedSection(
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
 				verticalAlignment = Alignment.CenterVertically
 			) {
+				PrivacifyStatusIndicator(
+					status = if (state.rootAvailable) "Root" else "No Root",
+					color = if (state.rootAvailable) GreenVibrant else RedVibrant
+				)
 				if (state.shizukuStatus.isNotEmpty()) {
-					val statusColor = when {
-						state.shizukuStatus == "Ready" -> GreenVibrant
+					val shizukuColor = when {
+						state.shizukuReady -> GreenVibrant
 						state.shizukuStatus == "Unknown" -> MaterialTheme.colorScheme.onSurfaceVariant
 						else -> RedVibrant
 					}
 					PrivacifyStatusIndicator(
-						status = state.shizukuStatus,
-						color = statusColor
+						status = if (state.shizukuReady) "Shizuku" else state.shizukuStatus,
+						color = shizukuColor
 					)
 				}
 				PrivacifyChip(text = "Root/Shizuku", color = PurpleVibrant)
@@ -366,7 +381,7 @@ private fun AdvancedSection(
 												if (option == "Shizuku" && state.shizukuStatus != "Ready") {
 													onRequestShizukuPermission()
 												}
-												onRefreshShizuku()
+												onRefreshRuntimeStatus()
 											}
 											.padding(horizontal = 16.dp, vertical = 8.dp)
 									) {
@@ -380,10 +395,19 @@ private fun AdvancedSection(
 									}
 								}
 							}
+							if (state.activeShellMethod.isNotEmpty()) {
+								Spacer(modifier = Modifier.height(4.dp))
+								Text(
+									text = "Active: ${state.activeShellMethod}",
+									style = MaterialTheme.typography.bodySmall,
+									color = if (state.activeShellMethod == "Root") GreenVibrant else PurpleVibrant,
+									fontWeight = FontWeight.Medium
+								)
+							}
 						}
 					}
 				}
-				}
+			}
 		}
 
 		PrivacifyWarningBanner(
@@ -395,10 +419,11 @@ private fun AdvancedSection(
 				if (state.automationEnabled) {
 					SettingsRow(
 						title = "Battery Optimization",
-						subtitle = "Disable for reliable background operation",
+						subtitle = if (state.batteryOptimizationGranted) "Already unrestricted"
+						else "Disable for reliable background operation",
 						icon = Icons.Outlined.Shield,
-						iconTint = PurpleVibrant,
-						iconBackground = PurpleVibrant.copy(alpha = 0.12f),
+						iconTint = if (state.batteryOptimizationGranted) GreenVibrant else PurpleVibrant,
+						iconBackground = (if (state.batteryOptimizationGranted) GreenVibrant else PurpleVibrant).copy(alpha = 0.12f),
 						onClick = {
 							try {
 								val intent = android.content.Intent().apply {
@@ -418,7 +443,7 @@ private fun AdvancedSection(
 							}
 						}
 					)
-					}
+				}
 			}
 		}
 	}

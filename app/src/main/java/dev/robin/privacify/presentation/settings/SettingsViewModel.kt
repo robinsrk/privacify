@@ -23,11 +23,16 @@ data class SettingsUiState(
 	val autostartEnabled: Boolean = false,
 	val shellTypeLabel: String = "Auto",
 	val shizukuStatus: String = "",
-	val shizukuAutoStart: Boolean = false
+	val shizukuAutoStart: Boolean = false,
+	val batteryOptimizationGranted: Boolean = false,
+	val rootAvailable: Boolean = false,
+	val shizukuReady: Boolean = false,
+	val activeShellMethod: String = ""
 )
 
 class SettingsViewModel(
-	private val prefs: dev.robin.privacify.core.settings.UserPreferencesManager
+	private val prefs: dev.robin.privacify.core.settings.UserPreferencesManager,
+	private val appContext: android.content.Context
 ) : ViewModel() {
 
 	private val mutableState = MutableStateFlow(SettingsUiState())
@@ -53,6 +58,8 @@ class SettingsViewModel(
 				val shellType = array[5] as String
 
 				val currentShizukuStatus = mutableState.value.shizukuStatus
+				val currentRootAvailable = mutableState.value.rootAvailable
+				val currentShizukuReady = mutableState.value.shizukuReady
 
 				SettingsUiState(
 					notificationsEnabled = notify,
@@ -61,7 +68,11 @@ class SettingsViewModel(
 					automationEnabled = automation,
 					autostartEnabled = autostart,
 					shellTypeLabel = shellTypeToLabel(shellType),
-					shizukuStatus = currentShizukuStatus.ifEmpty { "Unknown" }
+					shizukuStatus = currentShizukuStatus.ifEmpty { "Unknown" },
+					batteryOptimizationGranted = mutableState.value.batteryOptimizationGranted,
+					rootAvailable = currentRootAvailable,
+					shizukuReady = currentShizukuReady,
+					activeShellMethod = getActiveShellMethod(shellType, currentRootAvailable, currentShizukuReady)
 				)
 			}.collect { newState ->
 				mutableState.value = newState
@@ -69,7 +80,7 @@ class SettingsViewModel(
 		}
 
 		ioScope.launch {
-			refreshShizukuStatusInternal(null)
+			refreshRuntimeStatusInternal()
 		}
 	}
 
@@ -139,19 +150,48 @@ class SettingsViewModel(
 		}
 	}
 
-	fun refreshShizukuStatus(context: android.content.Context? = null) {
+	fun refreshRuntimeStatus() {
 		ioScope.launch {
-			refreshShizukuStatusInternal(context)
+			refreshRuntimeStatusInternal()
 		}
 	}
 
-	private suspend fun refreshShizukuStatusInternal(context: android.content.Context?) {
-		val status = try {
-			ShellUtils.getShizukuStatus(context)
-		} catch (e: Exception) {
-			"Error"
+	private suspend fun refreshRuntimeStatusInternal() {
+		val batteryOpt = isBatteryOptimizationGranted()
+		val rootAvail = try { ShellUtils.isRootAvailable() } catch (_: Exception) { false }
+		val shizukuStatusString = try { ShellUtils.getShizukuStatus(appContext) } catch (_: Exception) { "Error" }
+		val shizukuReady = shizukuStatusString == "Ready"
+		val shellType = prefs.shellType.value
+		val activeMethod = getActiveShellMethod(shellType, rootAvail, shizukuReady)
+		mutableState.update {
+			it.copy(
+				batteryOptimizationGranted = batteryOpt,
+				rootAvailable = rootAvail,
+				shizukuStatus = shizukuStatusString,
+				shizukuReady = shizukuReady,
+				activeShellMethod = activeMethod
+			)
 		}
-		mutableState.update { it.copy(shizukuStatus = status) }
+	}
+
+	private fun isBatteryOptimizationGranted(): Boolean {
+		return try {
+			val pm = appContext.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
+			pm.isIgnoringBatteryOptimizations(appContext.packageName)
+		} catch (_: Exception) { false }
+	}
+
+	private fun getActiveShellMethod(shellType: String, rootAvail: Boolean, shizukuReady: Boolean): String {
+		return when (shellType) {
+			"auto" -> when {
+				rootAvail -> "Root"
+				shizukuReady -> "Shizuku"
+				else -> ""
+			}
+			"root" -> if (rootAvail) "Root" else ""
+			"shizuku" -> if (shizukuReady) "Shizuku" else ""
+			else -> ""
+		}
 	}
 
 	private fun themeModeToLabel(mode: AppThemeMode): String = when (mode) {
@@ -170,7 +210,8 @@ class SettingsViewModel(
 		fun factory(context: android.content.Context): ViewModelProvider.Factory = viewModelFactory {
 			initializer {
 				SettingsViewModel(
-					prefs = dev.robin.privacify.core.settings.UserPreferencesManager.getInstance(context)
+					prefs = dev.robin.privacify.core.settings.UserPreferencesManager.getInstance(context),
+					appContext = context.applicationContext
 				)
 			}
 		}
