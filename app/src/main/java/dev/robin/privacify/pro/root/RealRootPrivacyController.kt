@@ -13,10 +13,12 @@ import kotlinx.coroutines.withContext
 class RealRootPrivacyController : RootPrivacyController {
     private val mutableMicDisabled = MutableStateFlow(false)
     private val mutableCameraDisabled = MutableStateFlow(false)
+    private val mutableLocationDisabled = MutableStateFlow(false)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override val micDisabled: StateFlow<Boolean> = mutableMicDisabled
     override val cameraDisabled: StateFlow<Boolean> = mutableCameraDisabled
+    override val locationDisabled: StateFlow<Boolean> = mutableLocationDisabled
 
     init {
         scope.launch { syncState() }
@@ -33,6 +35,9 @@ class RealRootPrivacyController : RootPrivacyController {
 
                 val camState = ShellUtils.runCommandWithFallbackOutput("cmd sensor_privacy get-state 0 camera")
                 mutableCameraDisabled.value = camState.contains("enabled", ignoreCase = true) || camState.contains("true", ignoreCase = true)
+
+                val locState = ShellUtils.runCommandWithFallbackOutput("cmd location get-location-enabled")
+                mutableLocationDisabled.value = !locState.contains("true", ignoreCase = true)
             }
         } catch (_: Exception) {
         }
@@ -74,6 +79,26 @@ class RealRootPrivacyController : RootPrivacyController {
                 val altCmd = "settings put global cam_lock 1"
                 ShellUtils.runCommandWithFallback(altCmd)
                 android.util.Log.d("RealRootPrivacyController", "Tried alt camera command")
+            }
+        }
+    }
+
+    override suspend fun setLocationDisabled(disabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            mutableLocationDisabled.value = disabled
+
+            val cmd = if (disabled) "cmd location set-location-enabled false"
+            else "cmd location set-location-enabled true"
+            android.util.Log.d("RealRootPrivacyController", "Attempting location toggle: $cmd")
+
+            val ok = ShellUtils.runCommandWithFallback(cmd)
+            android.util.Log.d("RealRootPrivacyController", "Result for location: $ok")
+
+            if (!ok) {
+                val mode = if (disabled) "0" else "3"
+                val altCmd = "settings put secure location_mode $mode"
+                ShellUtils.runCommandWithFallback(altCmd)
+                android.util.Log.d("RealRootPrivacyController", "Tried alt location command: $altCmd")
             }
         }
     }

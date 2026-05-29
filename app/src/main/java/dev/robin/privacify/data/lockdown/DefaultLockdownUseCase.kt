@@ -51,10 +51,12 @@ class DefaultLockdownUseCase(
 				if (enabled) {
 					rootPrivacyController.setMicDisabled(true)
 					rootPrivacyController.setCameraDisabled(true)
+					rootPrivacyController.setLocationDisabled(true)
 					enableDnd(true)
 				} else {
 					rootPrivacyController.setMicDisabled(false)
 					rootPrivacyController.setCameraDisabled(false)
+					rootPrivacyController.setLocationDisabled(false)
 					enableDnd(false)
 				}
 			} catch (e: Exception) {
