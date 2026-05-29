@@ -66,24 +66,30 @@ private val COMPACT_THRESHOLD = 600
 fun PrivacifyApp() {
 	val navController = rememberNavController()
 
-	NavHost(
-		navController = navController,
-		startDestination = "onboarding",
-		enterTransition = { fadeIn(tween(200)) },
-		exitTransition = { fadeOut(tween(200)) }
+	Box(
+		modifier = Modifier
+			.fillMaxSize()
+			.background(MaterialTheme.colorScheme.background)
 	) {
-		composable("onboarding") {
-			OnboardingRoute(
-				onFinished = {
-					navController.navigate("main") {
-						popUpTo("onboarding") { inclusive = true }
+		NavHost(
+			navController = navController,
+			startDestination = "onboarding",
+			enterTransition = { fadeIn(tween(200)) },
+			exitTransition = { fadeOut(tween(200)) }
+		) {
+			composable("onboarding") {
+				OnboardingRoute(
+					onFinished = {
+						navController.navigate("main") {
+							popUpTo("onboarding") { inclusive = true }
+						}
 					}
-				}
-			)
-		}
+				)
+			}
 
-		composable("main") {
-			MainNavigationShell()
+			composable("main") {
+				MainNavigationShell()
+			}
 		}
 	}
 }
