@@ -1,0 +1,10 @@
+- Dashboard redesigned with circular score arc
+- Floating toolbar navigation with spring animations
+- Onboarding redesigned with clean horizontal slide transitions
+- Native splash screen with Material You colors and eye blink animation
+- Location sensor kill added to lockdown mode
+- Settings show battery optimization status, root/Shizuku grant indicators, and active shell method
+- Reduced battery drain with singleton scanner and unified coroutine scope
+- Google Sans Flex typography and vibrant color palette
+- Redesigned app cards, settings rows, and icon containers
+- Various fixes and performance improvements
