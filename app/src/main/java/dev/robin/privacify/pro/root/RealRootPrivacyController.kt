@@ -56,7 +56,7 @@ class RealRootPrivacyController : RootPrivacyController {
             android.util.Log.d("RealRootPrivacyController", "Result for mic: $ok")
 
             if (!ok) {
-                val altCmd = "settings put global mic_lock 1"
+                val altCmd = "settings put global mic_lock ${if (disabled) "1" else "0"}"
                 ShellUtils.runCommandWithFallback(altCmd)
                 android.util.Log.d("RealRootPrivacyController", "Tried alt mic command")
             }
@@ -76,7 +76,7 @@ class RealRootPrivacyController : RootPrivacyController {
             android.util.Log.d("RealRootPrivacyController", "Result for camera: $ok")
 
             if (!ok) {
-                val altCmd = "settings put global cam_lock 1"
+                val altCmd = "settings put global cam_lock ${if (disabled) "1" else "0"}"
                 ShellUtils.runCommandWithFallback(altCmd)
                 android.util.Log.d("RealRootPrivacyController", "Tried alt camera command")
             }
