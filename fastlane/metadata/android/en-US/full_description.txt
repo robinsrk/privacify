@@ -1,6 +1,7 @@
 Privacify is a privacy control center that monitors app permissions, tracks sensor access, and secures your device — all without sending data anywhere.
 
 CORE FEATURES:
+
 • Privacy Dashboard — real-time privacy score with sensor usage overview
 • Permission Scanner — identifies apps with risky permission combinations
 • App Monitoring — tracks camera, microphone, and location access across apps
@@ -10,6 +11,7 @@ CORE FEATURES:
 • Lockdown Mode — instant system-wide sensor deactivation
 
 ADVANCED MODE (Root/Shizuku):
+
 • Hardware Kill Switches — disable mic and camera at the system level
 • AppOps Control — fine-grained permission management per app
 • Auto-Guard — automatically pauses kill switches when sensors are in use
