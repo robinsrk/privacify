@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -46,10 +45,12 @@ import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.VideocamOff
 import androidx.compose.material.icons.rounded.WifiOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -57,6 +58,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -159,7 +161,8 @@ private fun StepNavigation(
 	showBack: Boolean,
 	onBack: () -> Unit,
 	buttonText: String,
-	onContinue: () -> Unit
+	onContinue: () -> Unit,
+	enabled: Boolean = true
 ) {
 	Row(
 		modifier = Modifier
@@ -186,6 +189,7 @@ private fun StepNavigation(
 
 		Button(
 			onClick = onContinue,
+			enabled = enabled,
 			modifier = Modifier
 				.weight(1f)
 				.height(56.dp),
@@ -429,6 +433,9 @@ private fun SystemCheckStepContent(
 	val context = LocalContext.current
 	val lifecycleOwner = LocalLifecycleOwner.current
 
+	var showRootGuide by remember { mutableStateOf(false) }
+	var showShizukuGuide by remember { mutableStateOf(false) }
+
 	DisposableEffect(lifecycleOwner) {
 		val observer = LifecycleEventObserver { _, event ->
 			if (event == Lifecycle.Event.ON_RESUME) {
@@ -445,6 +452,59 @@ private fun SystemCheckStepContent(
 		contract = ActivityResultContracts.RequestPermission()
 	) {
 		onCheckPermissions(context)
+	}
+
+	if (showRootGuide) {
+		AlertDialog(
+			onDismissRequest = { showRootGuide = false },
+			title = {
+				Text(
+					text = "Grant Root Access",
+					fontWeight = FontWeight.Bold
+				)
+			},
+			text = {
+				Text(
+					text = "Root access allows Privacify to directly control hardware sensors for maximum privacy protection.\n\n" +
+							"To grant root access:\n" +
+							"1. Install Magisk or KernelSU on your device\n" +
+							"2. Approve the root request when prompted\n" +
+							"3. Return here to verify"
+				)
+			},
+			confirmButton = {
+				TextButton(onClick = { showRootGuide = false }) {
+					Text("Got it")
+				}
+			}
+		)
+	}
+
+	if (showShizukuGuide) {
+		AlertDialog(
+			onDismissRequest = { showShizukuGuide = false },
+			title = {
+				Text(
+					text = "Grant Shizuku Permission",
+					fontWeight = FontWeight.Bold
+				)
+			},
+			text = {
+				Text(
+					text = "Shizuku allows Privacify to control system sensors without full root access.\n\n" +
+							"To set up Shizuku:\n" +
+							"1. Install Shizuku from Google Play\n" +
+							"2. Open Shizuku and start the service\n" +
+							"3. Grant permission to Privacify when prompted\n" +
+							"4. Return here to verify"
+				)
+			},
+			confirmButton = {
+				TextButton(onClick = { showShizukuGuide = false }) {
+					Text("Got it")
+				}
+			}
+		)
 	}
 
 	Column(modifier = Modifier.fillMaxSize()) {
@@ -506,23 +566,38 @@ private fun SystemCheckStepContent(
 					)
 				}
 
-				if (state.isRootAvailable) {
-					PermissionToggleItem(
-						icon = Icons.Rounded.AdminPanelSettings,
-						title = "Root / Shizuku",
-						subtitle = "Enable deep system-level protection",
-						checked = state.isRootGranted,
-						isAdvanced = true,
-						onClick = {
-							if (state.isRootGranted) return@PermissionToggleItem
-							Toast.makeText(
-								context,
-								"Open Shizuku app to grant permission",
-								Toast.LENGTH_SHORT
-							).show()
+				HorizontalDivider(
+					modifier = Modifier.padding(horizontal = 16.dp),
+					color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+				)
+
+				PermissionToggleItem(
+					icon = Icons.Rounded.Shield,
+					title = "Root Access",
+					subtitle = if (state.rootGranted) "Root access granted"
+					           else "Requires Magisk or KernelSU",
+					checked = state.rootGranted,
+					isAdvanced = true,
+					onClick = {
+						if (!state.rootGranted) {
+							showRootGuide = true
 						}
-					)
-				}
+					}
+				)
+
+				PermissionToggleItem(
+					icon = Icons.Rounded.AdminPanelSettings,
+					title = "Shizuku",
+					subtitle = if (state.shizukuGranted) "Shizuku permission granted"
+					           else "Grant Shizuku permission for system-level control",
+					checked = state.shizukuGranted,
+					isAdvanced = true,
+					onClick = {
+						if (!state.shizukuGranted) {
+							showShizukuGuide = true
+						}
+					}
+				)
 			}
 
 			Spacer(Modifier.height(24.dp))
@@ -532,7 +607,8 @@ private fun SystemCheckStepContent(
 			showBack = true,
 			onBack = onBack,
 			buttonText = "All set",
-			onContinue = onContinue
+			onContinue = onContinue,
+			enabled = state.usageAccessGranted
 		)
 	}
 }

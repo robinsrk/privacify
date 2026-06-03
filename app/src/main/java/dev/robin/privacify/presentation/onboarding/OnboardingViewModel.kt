@@ -9,13 +9,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import dev.robin.privacify.core.root.RootManagerProvider
 import dev.robin.privacify.data.onboarding.DatastoreOnboardingRepository
 import dev.robin.privacify.domain.onboarding.OnboardingRepository
 import dev.robin.privacify.domain.onboarding.OnboardingStep
-import dev.robin.privacify.domain.root.RootManager
-import rikka.shizuku.Shizuku
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -23,141 +20,125 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class OnboardingViewModel(
-	private val rootManager: RootManager,
-	private val onboardingRepository: OnboardingRepository
+    private val onboardingRepository: OnboardingRepository
 ) : ViewModel() {
 
-	private val mutableState = MutableStateFlow(OnboardingUiState())
-	val state: StateFlow<OnboardingUiState> = mutableState
+    private val mutableState = MutableStateFlow(OnboardingUiState())
+    val state: StateFlow<OnboardingUiState> = mutableState
 
-	private var rootJob: Job? = null
+    init {
+        viewModelScope.launch {
+            onboardingRepository.isOnboardingCompleted.collectLatest { completed ->
+                mutableState.update { current ->
+                    current.copy(isCompleted = completed)
+                }
+            }
+        }
+    }
 
-	init {
-		rootJob = viewModelScope.launch {
-			rootManager.rootStatus.collectLatest { rooted ->
-				val shizukuGranted = try {
-					Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED
-				} catch (e: Exception) {
-					false
-				}
-				mutableState.update { current ->
-					current.copy(
-						isRootAvailable = rooted,
-						isRootGranted = shizukuGranted
-					)
-				}
-			}
-		}
+    fun checkPermissions(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    android.os.Process.myUid(),
+                    context.packageName
+                )
+            } else {
+                appOps.checkOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    android.os.Process.myUid(),
+                    context.packageName
+                )
+            }
+            val usageGranted = mode == AppOpsManager.MODE_ALLOWED
 
-		viewModelScope.launch {
-			onboardingRepository.isOnboardingCompleted.collectLatest { completed ->
-				mutableState.update { current ->
-					current.copy(isCompleted = completed)
-				}
-			}
-		}
-	}
+            val notificationGranted = if (Build.VERSION.SDK_INT >= 33) {
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
 
-	fun checkPermissions(context: Context) {
-		val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-		val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			appOps.unsafeCheckOpNoThrow(
-				AppOpsManager.OPSTR_GET_USAGE_STATS,
-				android.os.Process.myUid(),
-				context.packageName
-			)
-		} else {
-			appOps.checkOpNoThrow(
-				AppOpsManager.OPSTR_GET_USAGE_STATS,
-				android.os.Process.myUid(),
-				context.packageName
-			)
-		}
-		val usageGranted = mode == AppOpsManager.MODE_ALLOWED
+            val rootGranted = try {
+                dev.robin.privacify.pro.utils.ShellUtils.isRootAvailable()
+            } catch (e: Exception) {
+                false
+            }
 
-		val notificationGranted = if (Build.VERSION.SDK_INT >= 33) {
-			ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-		} else {
-			true
-		}
+            val shizukuGranted = try {
+                rikka.shizuku.Shizuku.pingBinder() && rikka.shizuku.Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+            } catch (e: Exception) {
+                false
+            }
 
-		val shizukuGranted = try {
-			Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED
-		} catch (e: Exception) {
-			false
-		}
+            mutableState.update { current ->
+                current.copy(
+                    usageAccessGranted = usageGranted,
+                    notificationPermissionGranted = notificationGranted,
+                    rootGranted = rootGranted,
+                    shizukuGranted = shizukuGranted
+                )
+            }
+        }
+    }
 
-		mutableState.update { current ->
-			current.copy(
-				usageAccessGranted = usageGranted,
-				notificationPermissionGranted = notificationGranted,
-				isRootGranted = shizukuGranted
-			)
-		}
-	}
+    fun onWelcomeContinue() {
+        mutableState.update { current ->
+            current.copy(step = OnboardingStep.Acknowledgement)
+        }
+    }
 
-	fun onWelcomeContinue() {
-		mutableState.update { current ->
-			current.copy(step = OnboardingStep.Acknowledgement)
-		}
-	}
+    fun onAcknowledgementContinue() {
+        mutableState.update { current ->
+            current.copy(step = OnboardingStep.SystemCheck)
+        }
+    }
 
-	fun onAcknowledgementContinue() {
-		mutableState.update { current ->
-			current.copy(step = OnboardingStep.SystemCheck)
-		}
-	}
+    fun onSystemCheckContinue() {
+        mutableState.update { current ->
+            current.copy(step = OnboardingStep.FeatureIntro)
+        }
+    }
 
-	fun onSystemCheckContinue() {
-		mutableState.update { current ->
-			current.copy(step = OnboardingStep.FeatureIntro)
-		}
-	}
+    fun onFeatureIntroContinue() {
+        completeOnboarding()
+    }
 
-	fun onFeatureIntroContinue() {
-		completeOnboarding()
-	}
+    fun onBack() {
+        val currentStep = state.value.step
+        val previousStep = when (currentStep) {
+            OnboardingStep.Acknowledgement -> OnboardingStep.Welcome
+            OnboardingStep.SystemCheck -> OnboardingStep.Acknowledgement
+            OnboardingStep.FeatureIntro -> OnboardingStep.SystemCheck
+            else -> return
+        }
+        mutableState.update { it.copy(step = previousStep) }
+    }
 
-	fun onBack() {
-		val currentStep = state.value.step
-		val previousStep = when (currentStep) {
-			OnboardingStep.Acknowledgement -> OnboardingStep.Welcome
-			OnboardingStep.SystemCheck -> OnboardingStep.Acknowledgement
-			OnboardingStep.FeatureIntro -> OnboardingStep.SystemCheck
-			else -> return
-		}
-		mutableState.update { it.copy(step = previousStep) }
-	}
+    private fun completeOnboarding() {
+        viewModelScope.launch {
+            mutableState.update { current ->
+                current.copy(isLoading = true)
+            }
 
-	private fun completeOnboarding() {
-		viewModelScope.launch {
-			mutableState.update { current ->
-				current.copy(isLoading = true)
-			}
+            onboardingRepository.setOnboardingCompleted(true)
 
-			onboardingRepository.setOnboardingCompleted(true)
+            mutableState.update { current ->
+                current.copy(isLoading = false, isCompleted = true)
+            }
+        }
+    }
 
-			mutableState.update { current ->
-				current.copy(isLoading = false, isCompleted = true)
-			}
-		}
-	}
-
-	override fun onCleared() {
-		rootJob?.cancel()
-		super.onCleared()
-	}
-
-	companion object {
-		fun factory(context: android.content.Context): ViewModelProvider.Factory {
-			return object : ViewModelProvider.Factory {
-				@Suppress("UNCHECKED_CAST")
-				override fun <T : ViewModel> create(modelClass: Class<T>): T {
-					val rootManager = RootManagerProvider.instance
-					val onboardingRepository = DatastoreOnboardingRepository(context.applicationContext)
-					return OnboardingViewModel(rootManager, onboardingRepository) as T
-				}
-			}
-		}
-	}
+    companion object {
+        fun factory(context: android.content.Context): ViewModelProvider.Factory {
+            return object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    val onboardingRepository = DatastoreOnboardingRepository(context.applicationContext)
+                    return OnboardingViewModel(onboardingRepository) as T
+                }
+            }
+        }
+    }
 }
