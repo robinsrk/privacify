@@ -189,7 +189,8 @@ private fun PrivacifyFloatingToolbar(
 			.windowInsetsPadding(WindowInsets.navigationBars)
 			.padding(start = 12.dp, end = 12.dp, bottom = 0.dp),
 		shape = RoundedCornerShape(999.dp),
-		color = MaterialTheme.colorScheme.primary,
+		color = MaterialTheme.colorScheme.surfaceContainerHigh,
+		tonalElevation = 3.dp,
 		shadowElevation = 6.dp
 	) {
 		Row(
@@ -229,7 +230,7 @@ private fun FloatingToolbarItem(
 			.clickable { onClick() }
 			.width(itemWidth)
 			.background(
-				if (selected) Color.White.copy(alpha = 0.2f)
+				if (selected) MaterialTheme.colorScheme.primary
 				else Color.Transparent
 			)
 			.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -243,8 +244,8 @@ private fun FloatingToolbarItem(
 				imageVector = destination.icon,
 				contentDescription = stringResource(destination.labelRes),
 				modifier = Modifier.size(24.dp),
-				tint = if (selected) Color.White
-				else Color.White.copy(alpha = 0.6f)
+				tint = if (selected) MaterialTheme.colorScheme.onPrimary
+				else MaterialTheme.colorScheme.onSurfaceVariant
 			)
 			if (selected) {
 				Text(
@@ -253,7 +254,7 @@ private fun FloatingToolbarItem(
 						fontWeight = FontWeight.Black,
 						fontSize = 12.sp
 					),
-					color = Color.White,
+					color = MaterialTheme.colorScheme.onPrimary,
 					maxLines = 1
 				)
 			}
