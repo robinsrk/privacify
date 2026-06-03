@@ -1,0 +1,5 @@
+• New Privacy Controls Widget — toggle mic, camera, location from home screen
+• Onboarding: usage access is now mandatory to proceed
+• Onboarding: separate Root Access and Shizuku tiles with setup guides
+• Bottom navigation bar updated to Material 3 color scheme
+• Code cleanup — removed duplicate provider
