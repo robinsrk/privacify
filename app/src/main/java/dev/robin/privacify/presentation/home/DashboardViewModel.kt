@@ -109,6 +109,9 @@ class DashboardViewModel(
 		if (!hasShellAccess()) return
 		ioScope.launch {
 			rootPrivacyController.setMicDisabled(!rootPrivacyController.micDisabled.value)
+			dev.robin.privacify.core.widget.PrivacyControlsWidgetProvider.updateAllWidgets(
+				dev.robin.privacify.core.utils.AppContextProvider.context
+			)
 		}
 	}
 
@@ -116,6 +119,9 @@ class DashboardViewModel(
 		if (!hasShellAccess()) return
 		ioScope.launch {
 			rootPrivacyController.setCameraDisabled(!rootPrivacyController.cameraDisabled.value)
+			dev.robin.privacify.core.widget.PrivacyControlsWidgetProvider.updateAllWidgets(
+				dev.robin.privacify.core.utils.AppContextProvider.context
+			)
 		}
 	}
 
@@ -123,6 +129,9 @@ class DashboardViewModel(
 		if (!hasShellAccess()) return
 		ioScope.launch {
 			rootPrivacyController.setLocationDisabled(!rootPrivacyController.locationDisabled.value)
+			dev.robin.privacify.core.widget.PrivacyControlsWidgetProvider.updateAllWidgets(
+				dev.robin.privacify.core.utils.AppContextProvider.context
+			)
 		}
 	}
 
