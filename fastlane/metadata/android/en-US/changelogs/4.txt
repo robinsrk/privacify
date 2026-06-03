@@ -1,0 +1,2 @@
+• Auto-Guard battery optimizations — reduced CPU wake and polling
+• Fastlane metadata fixes for F-Droid / IzzyOnDroid submission
