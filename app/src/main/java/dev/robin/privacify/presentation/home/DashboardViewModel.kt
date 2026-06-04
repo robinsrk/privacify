@@ -3,6 +3,7 @@ package dev.robin.privacify.presentation.home
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import dev.robin.privacify.core.root.RootManagerProvider
 import dev.robin.privacify.core.settings.UserPreferencesManager
 import dev.robin.privacify.data.apps.SystemPermissionScanner
@@ -13,8 +14,6 @@ import dev.robin.privacify.core.security.PrivacyControllersProvider
 import dev.robin.privacify.domain.lockdown.LockdownUseCase
 import dev.robin.privacify.domain.root.RootManager
 import dev.robin.privacify.domain.root.RootPrivacyController
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -33,45 +32,43 @@ class DashboardViewModel(
 	private val mutableState = MutableStateFlow(DashboardUiState())
 	val state: StateFlow<DashboardUiState> = mutableState
 
-	private val ioScope = CoroutineScope(Dispatchers.IO)
-
 	init {
-		ioScope.launch {
+		viewModelScope.launch {
 			rootManager.rootStatus.collectLatest { rooted ->
 				mutableState.update { current ->
 					current.copy(isRooted = rooted)
 				}
 			}
 		}
-		ioScope.launch {
+		viewModelScope.launch {
 			rootPrivacyController.micDisabled.collectLatest { disabled ->
 				mutableState.update { current ->
 					current.copy(micDisabled = disabled)
 				}
 			}
 		}
-		ioScope.launch {
+		viewModelScope.launch {
 			rootPrivacyController.cameraDisabled.collectLatest { disabled ->
 				mutableState.update { current ->
 					current.copy(cameraDisabled = disabled)
 				}
 			}
 		}
-		ioScope.launch {
+		viewModelScope.launch {
 			rootPrivacyController.locationDisabled.collectLatest { disabled ->
 				mutableState.update { current ->
 					current.copy(locationDisabled = disabled)
 				}
 			}
 		}
-		ioScope.launch {
+		viewModelScope.launch {
 			permissionScanner.apps.collectLatest { apps ->
 				mutableState.update { current ->
 					computeFromApps(current, apps)
 				}
 			}
 		}
-		ioScope.launch {
+		viewModelScope.launch {
 			prefs.automationEnabled.collectLatest { enabled ->
 				mutableState.update { current ->
 					current.copy(automationEnabled = enabled)
@@ -89,7 +86,7 @@ class DashboardViewModel(
 		}
 	}
 	fun onScanNowClicked() {
-		ioScope.launch {
+		viewModelScope.launch {
 			mutableState.update { it.copy(isScanning = true, statusSubtitle = "Scanning system...") }
 			permissionScanner.refresh()
 			mutableState.update { it.copy(isScanning = false, statusSubtitle = "Scan complete. Dashboard is up to date.") }
@@ -107,7 +104,7 @@ class DashboardViewModel(
 
 	private fun toggleMic() {
 		if (!hasShellAccess()) return
-		ioScope.launch {
+		viewModelScope.launch {
 			rootPrivacyController.setMicDisabled(!rootPrivacyController.micDisabled.value)
 			dev.robin.privacify.core.widget.PrivacyControlsWidgetProvider.updateAllWidgets(
 				dev.robin.privacify.core.utils.AppContextProvider.context
@@ -117,7 +114,7 @@ class DashboardViewModel(
 
 	private fun toggleCamera() {
 		if (!hasShellAccess()) return
-		ioScope.launch {
+		viewModelScope.launch {
 			rootPrivacyController.setCameraDisabled(!rootPrivacyController.cameraDisabled.value)
 			dev.robin.privacify.core.widget.PrivacyControlsWidgetProvider.updateAllWidgets(
 				dev.robin.privacify.core.utils.AppContextProvider.context
@@ -127,7 +124,7 @@ class DashboardViewModel(
 
 	private fun toggleLocation() {
 		if (!hasShellAccess()) return
-		ioScope.launch {
+		viewModelScope.launch {
 			rootPrivacyController.setLocationDisabled(!rootPrivacyController.locationDisabled.value)
 			dev.robin.privacify.core.widget.PrivacyControlsWidgetProvider.updateAllWidgets(
 				dev.robin.privacify.core.utils.AppContextProvider.context
@@ -137,7 +134,7 @@ class DashboardViewModel(
 
 	private fun toggleLockdown() {
 		if (!hasShellAccess()) return
-		ioScope.launch {
+		viewModelScope.launch {
 			if (state.value.lockdownEnabled) {
 				lockdownUseCase.disableLockdown()
 				mutableState.update { current ->

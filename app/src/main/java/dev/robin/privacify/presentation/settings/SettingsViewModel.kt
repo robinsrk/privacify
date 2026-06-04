@@ -2,13 +2,13 @@ package dev.robin.privacify.presentation.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import dev.robin.privacify.core.security.PrivacyControllersProvider
 import dev.robin.privacify.core.theme.AppThemeMode
 import dev.robin.privacify.core.theme.ThemePreferenceManager
 import dev.robin.privacify.pro.utils.ShellUtils
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,10 +38,8 @@ class SettingsViewModel(
 	private val mutableState = MutableStateFlow(SettingsUiState())
 	val state: StateFlow<SettingsUiState> = mutableState
 
-	private val ioScope = CoroutineScope(Dispatchers.IO)
-
 	init {
-		ioScope.launch {
+		viewModelScope.launch {
 			kotlinx.coroutines.flow.combine<Any?, SettingsUiState>(
 				prefs.themeMode,
 				prefs.notificationsEnabled,
@@ -79,7 +77,7 @@ class SettingsViewModel(
 			}
 		}
 
-		ioScope.launch {
+		viewModelScope.launch {
 			refreshRuntimeStatusInternal()
 		}
 	}
@@ -98,7 +96,7 @@ class SettingsViewModel(
 	}
 
 	fun onEditHostsClicked() {
-		ioScope.launch(Dispatchers.IO) {
+		viewModelScope.launch(Dispatchers.IO) {
 			dev.robin.privacify.data.root.HostsFileManager.addBlockRule("telemetry.google.com")
 		}
 	}
@@ -151,7 +149,7 @@ class SettingsViewModel(
 	}
 
 	fun refreshRuntimeStatus() {
-		ioScope.launch {
+		viewModelScope.launch {
 			refreshRuntimeStatusInternal()
 		}
 	}

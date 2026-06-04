@@ -326,6 +326,7 @@ fun AppDetailBottomSheet(
 	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 	val context = LocalContext.current
 	val viewModel: AppDetailViewModel = viewModel(
+		key = packageName,
 		factory = AppDetailViewModel.factory(packageName, context)
 	)
 	val app by viewModel.state.collectAsState()
@@ -352,14 +353,6 @@ fun AppDetailBottomSheet(
 				.padding(horizontal = 16.dp, vertical = 8.dp),
 			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
-			Box(
-				modifier = Modifier
-					.align(Alignment.CenterHorizontally)
-					.width(32.dp)
-					.height(4.dp)
-					.clip(RoundedCornerShape(999.dp))
-					.background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-			)
 			Spacer(modifier = Modifier.height(8.dp))
 
 			val current = app

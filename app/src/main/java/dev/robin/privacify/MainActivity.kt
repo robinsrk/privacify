@@ -60,7 +60,6 @@ class MainActivity : ComponentActivity() {
 						}
 						fadeOut.doOnEnd {
 							splashScreenViewProvider.remove()
-							enableEdgeToEdge()
 						}
 
 						blink.doOnEnd { fadeOut.start() }

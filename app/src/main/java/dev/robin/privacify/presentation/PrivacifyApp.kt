@@ -13,13 +13,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,13 +35,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -58,10 +53,6 @@ import dev.robin.privacify.presentation.navigation.BottomNavDestination
 import dev.robin.privacify.presentation.onboarding.OnboardingRoute
 import dev.robin.privacify.presentation.settings.HostsEditorScreen
 import dev.robin.privacify.presentation.settings.SettingsScreen
-import dev.robin.privacify.ui.theme.MdSpacing
-
-private val COMPACT_THRESHOLD = 600
-
 @Composable
 fun PrivacifyApp() {
 	val navController = rememberNavController()
@@ -99,81 +90,75 @@ private fun MainNavigationShell() {
 	val navController = rememberNavController()
 	val backstackEntry by navController.currentBackStackEntryAsState()
 	val currentRoute = backstackEntry?.destination?.route
-	val configuration = LocalConfiguration.current
-	val isCompact = configuration.screenWidthDp < COMPACT_THRESHOLD
 
 	val destinations = BottomNavDestination.items
 	val showBottomBar = currentRoute in destinations.map { it.route }
 
-	Box(modifier = Modifier.fillMaxSize()) {
-		Scaffold(
-			containerColor = MaterialTheme.colorScheme.background
-		) { innerPadding ->
-			Row(
-				modifier = Modifier
-					.fillMaxSize()
-					.padding(innerPadding)
+	Scaffold(
+		containerColor = MaterialTheme.colorScheme.background,
+		bottomBar = {
+			AnimatedVisibility(
+				visible = showBottomBar,
+				enter = slideInVertically(animationSpec = tween(300)) { it },
+				exit = slideOutVertically(animationSpec = tween(300)) { it }
 			) {
-				Surface(
-					modifier = Modifier
-						.weight(1f)
-						.fillMaxHeight(),
-					color = MaterialTheme.colorScheme.background
+				PrivacifyFloatingToolbar(
+					destinations = destinations,
+					currentRoute = currentRoute,
+					onDestinationSelected = { destination ->
+						navController.navigate(destination.route) {
+							popUpTo(navController.graph.findStartDestination().id) {
+								saveState = true
+							}
+							launchSingleTop = true
+							restoreState = true
+						}
+					}
+				)
+			}
+		}
+	) { innerPadding ->
+		Row(
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(innerPadding)
+		) {
+			Surface(
+				modifier = Modifier
+					.weight(1f)
+					.fillMaxHeight(),
+				color = MaterialTheme.colorScheme.background
+			) {
+				NavHost(
+					navController = navController,
+					startDestination = BottomNavDestination.HomeDestination.route,
+					enterTransition = { fadeIn(tween(250)) },
+					exitTransition = { fadeOut(tween(250)) }
 				) {
-					NavHost(
-						navController = navController,
-						startDestination = BottomNavDestination.HomeDestination.route,
-						enterTransition = { fadeIn(tween(250)) },
-						exitTransition = { fadeOut(tween(250)) }
-					) {
-						composable(BottomNavDestination.HomeDestination.route) {
-							HomeScreen()
-						}
-						composable(BottomNavDestination.AppsDestination.route) {
-							AppsScreen()
-						}
-						composable(BottomNavDestination.AnalyticsDestination.route) {
-							AnalyticsScreen()
-						}
-						composable(BottomNavDestination.SettingsDestination.route) {
-							SettingsScreen()
-						}
-						composable("lockdown") {
-							LockdownScreen(
-								onBack = { navController.popBackStack() }
-							)
-						}
-						composable("hosts_editor") {
-							HostsEditorScreen(
-								onBack = { navController.popBackStack() }
-							)
-						}
+					composable(BottomNavDestination.HomeDestination.route) {
+						HomeScreen()
+					}
+					composable(BottomNavDestination.AppsDestination.route) {
+						AppsScreen()
+					}
+					composable(BottomNavDestination.AnalyticsDestination.route) {
+						AnalyticsScreen()
+					}
+					composable(BottomNavDestination.SettingsDestination.route) {
+						SettingsScreen()
+					}
+					composable("lockdown") {
+						LockdownScreen(
+							onBack = { navController.popBackStack() }
+						)
+					}
+					composable("hosts_editor") {
+						HostsEditorScreen(
+							onBack = { navController.popBackStack() }
+						)
 					}
 				}
 			}
-		}
-
-		AnimatedVisibility(
-			visible = showBottomBar && isCompact,
-			enter = slideInVertically(animationSpec = tween(300)) { it },
-			exit = slideOutVertically(animationSpec = tween(300)) { it },
-			modifier = Modifier
-				.align(Alignment.BottomCenter)
-				.zIndex(1f)
-		) {
-			PrivacifyFloatingToolbar(
-				destinations = destinations,
-				currentRoute = currentRoute,
-				onDestinationSelected = { destination ->
-					navController.navigate(destination.route) {
-						popUpTo(navController.graph.findStartDestination().id) {
-							saveState = true
-						}
-						launchSingleTop = true
-						restoreState = true
-					}
-				}
-			)
 		}
 	}
 }
