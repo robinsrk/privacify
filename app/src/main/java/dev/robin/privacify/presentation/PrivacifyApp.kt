@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
@@ -30,15 +29,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -46,6 +46,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import dev.robin.privacify.data.onboarding.DatastoreOnboardingRepository
 import dev.robin.privacify.presentation.analytics.AnalyticsScreen
 import dev.robin.privacify.presentation.apps.AppsScreen
 import dev.robin.privacify.presentation.home.HomeScreen
@@ -54,117 +55,96 @@ import dev.robin.privacify.presentation.navigation.BottomNavDestination
 import dev.robin.privacify.presentation.onboarding.OnboardingRoute
 import dev.robin.privacify.presentation.settings.HostsEditorScreen
 import dev.robin.privacify.presentation.settings.SettingsScreen
+import kotlinx.coroutines.flow.first
+
 @Composable
 fun PrivacifyApp() {
 	val navController = rememberNavController()
+	val context = LocalContext.current
+
+	LaunchedEffect(Unit) {
+		val repo = DatastoreOnboardingRepository(context.applicationContext)
+		if (!repo.isOnboardingCompleted.first()) {
+			navController.navigate("onboarding")
+		}
+	}
+
+	val backstackEntry by navController.currentBackStackEntryAsState()
+	val currentRoute = backstackEntry?.destination?.route
+
+	val mainRoutes = BottomNavDestination.items.map { it.route }
+	val showBottomBar = currentRoute in mainRoutes
 
 	Box(
 		modifier = Modifier
 			.fillMaxSize()
 			.background(MaterialTheme.colorScheme.background)
 	) {
-		NavHost(
-			navController = navController,
-			startDestination = "onboarding",
-			enterTransition = { fadeIn(tween(200)) },
-			exitTransition = { fadeOut(tween(200)) }
-		) {
-			composable("onboarding") {
-				OnboardingRoute(
-					onFinished = {
-						navController.navigate("main") {
-							popUpTo("onboarding") { inclusive = true }
-						}
-					}
-				)
-			}
-
-			composable("main") {
-				MainNavigationShell()
-			}
-		}
-	}
-}
-
-@Composable
-private fun MainNavigationShell() {
-	val navController = rememberNavController()
-	val backstackEntry by navController.currentBackStackEntryAsState()
-	val currentRoute = backstackEntry?.destination?.route
-
-	val destinations = BottomNavDestination.items
-	val showBottomBar = currentRoute in destinations.map { it.route }
-
-	Scaffold(
-		containerColor = MaterialTheme.colorScheme.background,
-		bottomBar = {
-			AnimatedVisibility(
-				visible = showBottomBar,
-				enter = slideInVertically(animationSpec = tween(300)) { it },
-				exit = slideOutVertically(animationSpec = tween(300)) { it }
-			) {
-				Box(
-					modifier = Modifier
-						.fillMaxWidth()
-						.padding(bottom = 8.dp),
-					contentAlignment = Alignment.Center
+		Scaffold(
+			containerColor = MaterialTheme.colorScheme.background,
+			bottomBar = {
+				AnimatedVisibility(
+					visible = showBottomBar,
+					enter = slideInVertically(animationSpec = tween(300)) { it },
+					exit = slideOutVertically(animationSpec = tween(300)) { it }
 				) {
-					PrivacifyFloatingToolbar(
-						destinations = destinations,
-						currentRoute = currentRoute,
-						onDestinationSelected = { destination ->
-							navController.navigate(destination.route) {
-								popUpTo(navController.graph.findStartDestination().id) {
-									saveState = true
+					Box(
+						modifier = Modifier
+							.fillMaxWidth()
+							.padding(bottom = 8.dp),
+						contentAlignment = Alignment.Center
+					) {
+						PrivacifyFloatingToolbar(
+							currentRoute = currentRoute,
+							onDestinationSelected = { destination ->
+								navController.navigate(destination.route) {
+									popUpTo(navController.graph.findStartDestination().id) {
+										saveState = true
+									}
+									launchSingleTop = true
+									restoreState = true
 								}
-								launchSingleTop = true
-								restoreState = true
 							}
+						)
+					}
+				}
+			}
+		) { innerPadding ->
+			NavHost(
+				navController = navController,
+				startDestination = "home",
+				modifier = Modifier.padding(innerPadding),
+				enterTransition = { fadeIn(tween(250)) },
+				exitTransition = { fadeOut(tween(250)) }
+			) {
+				composable(BottomNavDestination.HomeDestination.route) {
+					HomeScreen()
+				}
+				composable(BottomNavDestination.AppsDestination.route) {
+					AppsScreen()
+				}
+				composable(BottomNavDestination.AnalyticsDestination.route) {
+					AnalyticsScreen()
+				}
+				composable(BottomNavDestination.SettingsDestination.route) {
+					SettingsScreen()
+				}
+				composable("onboarding") {
+					OnboardingRoute(
+						onFinished = {
+							navController.popBackStack("home", inclusive = false)
 						}
 					)
 				}
-			}
-		}
-	) { innerPadding ->
-		Row(
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(innerPadding)
-		) {
-			Surface(
-				modifier = Modifier
-					.weight(1f)
-					.fillMaxHeight(),
-				color = MaterialTheme.colorScheme.background
-			) {
-				NavHost(
-					navController = navController,
-					startDestination = BottomNavDestination.HomeDestination.route,
-					enterTransition = { fadeIn(tween(250)) },
-					exitTransition = { fadeOut(tween(250)) }
-				) {
-					composable(BottomNavDestination.HomeDestination.route) {
-						HomeScreen()
-					}
-					composable(BottomNavDestination.AppsDestination.route) {
-						AppsScreen()
-					}
-					composable(BottomNavDestination.AnalyticsDestination.route) {
-						AnalyticsScreen()
-					}
-					composable(BottomNavDestination.SettingsDestination.route) {
-						SettingsScreen()
-					}
-					composable("lockdown") {
-						LockdownScreen(
-							onBack = { navController.popBackStack() }
-						)
-					}
-					composable("hosts_editor") {
-						HostsEditorScreen(
-							onBack = { navController.popBackStack() }
-						)
-					}
+				composable("lockdown") {
+					LockdownScreen(
+						onBack = { navController.popBackStack() }
+					)
+				}
+				composable("hosts_editor") {
+					HostsEditorScreen(
+						onBack = { navController.popBackStack() }
+					)
 				}
 			}
 		}
@@ -173,10 +153,11 @@ private fun MainNavigationShell() {
 
 @Composable
 private fun PrivacifyFloatingToolbar(
-	destinations: List<BottomNavDestination>,
 	currentRoute: String?,
 	onDestinationSelected: (BottomNavDestination) -> Unit
 ) {
+	val destinations = BottomNavDestination.items
+
 	Surface(
 		modifier = Modifier
 			.windowInsetsPadding(WindowInsets.navigationBars)
