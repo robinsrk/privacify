@@ -15,8 +15,8 @@ android {
         applicationId = "dev.robin.privacify"
         minSdk = 24
         targetSdk = 34
-        versionCode = 6
-        versionName = "1.5.1-pre"
+        versionCode = 7
+        versionName = "1.5.2-pre"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
