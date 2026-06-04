@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -102,19 +103,26 @@ private fun MainNavigationShell() {
 				enter = slideInVertically(animationSpec = tween(300)) { it },
 				exit = slideOutVertically(animationSpec = tween(300)) { it }
 			) {
-				PrivacifyFloatingToolbar(
-					destinations = destinations,
-					currentRoute = currentRoute,
-					onDestinationSelected = { destination ->
-						navController.navigate(destination.route) {
-							popUpTo(navController.graph.findStartDestination().id) {
-								saveState = true
+				Box(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(bottom = 8.dp),
+					contentAlignment = Alignment.Center
+				) {
+					PrivacifyFloatingToolbar(
+						destinations = destinations,
+						currentRoute = currentRoute,
+						onDestinationSelected = { destination ->
+							navController.navigate(destination.route) {
+								popUpTo(navController.graph.findStartDestination().id) {
+									saveState = true
+								}
+								launchSingleTop = true
+								restoreState = true
 							}
-							launchSingleTop = true
-							restoreState = true
 						}
-					}
-				)
+					)
+				}
 			}
 		}
 	) { innerPadding ->
