@@ -1,0 +1,3 @@
+• Fix critical bugs: bottom nav bar now visible on tablets (S6 Lite), app detail no longer shows wrong app, duplicate drag handle removed, blank screen on wake/page restore fixed
+• Removed Foojay resolver for F-Droid/IzzyOnDroid compatibility
+• Various stability improvements
