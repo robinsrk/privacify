@@ -7,10 +7,12 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
 
 object ShellUtils {
 
     private const val TAG = "ShellUtils"
+    private const val ROOT_TIMEOUT = 5L
 
     @Volatile
     private var binderReceived = false
@@ -79,12 +81,17 @@ object ShellUtils {
             os.writeBytes(command + "\n")
             os.writeBytes("exit\n")
             os.flush()
-            process.waitFor()
+            process.waitFor(ROOT_TIMEOUT, TimeUnit.SECONDS)
 
             stdoutReader.join(1000)
             stderrReader.join(1000)
 
-            val ok = process.exitValue() == 0
+            val ok = try {
+                process.exitValue() == 0
+            } catch (_: IllegalThreadStateException) {
+                process.destroyForcibly()
+                false
+            }
             if (!stdout.isEmpty()) {
                 Log.d(TAG, "root stdout: $stdout")
             }
@@ -361,7 +368,7 @@ object ShellUtils {
             os.writeBytes(command + "\n")
             os.writeBytes("exit\n")
             os.flush()
-            process.waitFor()
+            process.waitFor(ROOT_TIMEOUT, TimeUnit.SECONDS)
 
             stdoutReader.join(1000)
             stderrReader.join(1000)
