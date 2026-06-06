@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="fastlane/metadata/android/en-US/images/featureGraphic/featuregraphic.png" alt="Privacify" width="100%" />
+  <img src="fastlane/metadata/android/en-US/images/featuregraphic.png" alt="Privacify" width="100%" />
 </div>
 
 <h1 align="center">Privacify</h1>
