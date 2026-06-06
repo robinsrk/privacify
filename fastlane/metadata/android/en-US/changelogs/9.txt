@@ -1,0 +1,5 @@
+• Fix blank screen when launching from Settings or switching split screen mode
+• Fix bottom nav toolbar labels truncated on tablets
+• Fix Auto Guard not restoring kill switches when device locked (retries on unlock, root command timeout)
+• Ensure splash screen always dismisses regardless of device state
+• Various stability improvements
