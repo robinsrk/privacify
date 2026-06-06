@@ -42,6 +42,7 @@
 			android:name=".MainActivity"
 			android:exported="true"
 			android:label="@string/app_name"
+			android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
 			android:theme="@style/Theme.Privacify">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
