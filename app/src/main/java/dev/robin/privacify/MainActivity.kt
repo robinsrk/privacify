@@ -47,25 +47,25 @@ class MainActivity : ComponentActivity() {
 					null
 				}
 
-				try {
-					if (splashIcon != null) {
-						val blink = ObjectAnimator.ofFloat(
-							splashIcon, "scaleY", 1f, 0.12f, 1f
-						).apply {
-							duration = 300
-						}
-
-						val fadeOut = ObjectAnimator.ofFloat(splashScreenView, "alpha", 1f, 0f).apply {
-							duration = 350
-						}
-						fadeOut.doOnEnd {
-							splashScreenViewProvider.remove()
-						}
-
-						blink.doOnEnd { fadeOut.start() }
-						blink.start()
+				if (splashIcon != null) {
+					val blink = ObjectAnimator.ofFloat(
+						splashIcon, "scaleY", 1f, 0.12f, 1f
+					).apply {
+						duration = 300
 					}
-				} catch (_: Exception) {}
+
+					val fadeOut = ObjectAnimator.ofFloat(splashScreenView, "alpha", 1f, 0f).apply {
+						duration = 350
+					}
+					fadeOut.doOnEnd {
+						splashScreenViewProvider.remove()
+					}
+
+					blink.doOnEnd { fadeOut.start() }
+					blink.start()
+				} else {
+					splashScreenViewProvider.remove()
+				}
 			} catch (e: Exception) {
 				splashScreenViewProvider.remove()
 			}
