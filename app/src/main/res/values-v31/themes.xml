@@ -3,5 +3,6 @@
 
 	<style name="Theme.Privacify" parent="android:Theme.Material.Light.NoActionBar">
 		<item name="android:windowSplashScreenBackground">@android:color/system_accent1_600</item>
+		<item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
 	</style>
 </resources>
