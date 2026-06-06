@@ -2,9 +2,10 @@ package dev.robin.privacify.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -20,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -189,20 +189,17 @@ private fun FloatingToolbarItem(
 	selected: Boolean,
 	onClick: () -> Unit
 ) {
-	val itemWidth by animateDpAsState(
-		targetValue = if (selected) 104.dp else 56.dp,
-		animationSpec = spring(
-			dampingRatio = Spring.DampingRatioMediumBouncy,
-			stiffness = Spring.StiffnessLow
-		),
-		label = "nav_width"
-	)
-
 	Box(
 		modifier = Modifier
 			.clip(RoundedCornerShape(999.dp))
 			.clickable { onClick() }
-			.width(itemWidth)
+			.widthIn(min = 56.dp)
+			.animateContentSize(
+				spring(
+					dampingRatio = Spring.DampingRatioMediumBouncy,
+					stiffness = Spring.StiffnessLow
+				)
+			)
 			.background(
 				if (selected) MaterialTheme.colorScheme.primary
 				else Color.Transparent
