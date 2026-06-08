@@ -21,11 +21,14 @@ import androidx.compose.material.icons.outlined.AdminPanelSettings
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.Radar
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
+import androidx.compose.material.icons.outlined.Videocam
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -51,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import android.content.Context
 import dev.robin.privacify.core.provider.ProFeature
 import dev.robin.privacify.ui.components.PrivacifyAutoGuardCard
 import dev.robin.privacify.ui.components.PrivacifyBadge
@@ -144,6 +148,12 @@ private fun ProtectionSection(
 	var showAutostartProDialog by remember { mutableStateOf(false) }
 	val isPro = ProFeature.isAutoGuardAvailable()
 
+	val context = LocalContext.current
+	val prefs = remember { context.getSharedPreferences("privacify_prefs", Context.MODE_PRIVATE) }
+	var micEnabled by remember { mutableStateOf(prefs.getBoolean("auto_guard_mic_enabled", true)) }
+	var cameraEnabled by remember { mutableStateOf(prefs.getBoolean("auto_guard_camera_enabled", true)) }
+	var locationEnabled by remember { mutableStateOf(prefs.getBoolean("auto_guard_location_enabled", false)) }
+
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Row(
 			modifier = Modifier
@@ -164,6 +174,62 @@ private fun ProtectionSection(
 			enabled = enabled,
 			onToggle = onToggle
 		)
+		if (enabled && isPro) {
+			PrivacifyExpressiveCard {
+				Column {
+					SettingsRow(
+						title = "Microphone",
+						subtitle = "Block mic when apps are listening",
+						icon = Icons.Outlined.Mic,
+						iconTint = MaterialTheme.colorScheme.error,
+						iconBackground = MaterialTheme.colorScheme.error.copy(alpha = 0.12f),
+						trailing = {
+							PrivacifySwitch(
+								checked = micEnabled,
+								onCheckedChange = { enabled ->
+									micEnabled = enabled
+									prefs.edit().putBoolean("auto_guard_mic_enabled", enabled).apply()
+								}
+							)
+						}
+					)
+					PrivacifyDivider()
+					SettingsRow(
+						title = "Camera",
+						subtitle = "Block camera when apps are recording",
+						icon = Icons.Outlined.Videocam,
+						iconTint = MaterialTheme.colorScheme.primary,
+						iconBackground = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+						trailing = {
+							PrivacifySwitch(
+								checked = cameraEnabled,
+								onCheckedChange = { enabled ->
+									cameraEnabled = enabled
+									prefs.edit().putBoolean("auto_guard_camera_enabled", enabled).apply()
+								}
+							)
+						}
+					)
+					PrivacifyDivider()
+					SettingsRow(
+						title = "Location",
+						subtitle = "Block location when apps are tracking",
+						icon = Icons.Outlined.LocationOn,
+						iconTint = MaterialTheme.colorScheme.tertiary,
+						iconBackground = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f),
+						trailing = {
+							PrivacifySwitch(
+								checked = locationEnabled,
+								onCheckedChange = { enabled ->
+									locationEnabled = enabled
+									prefs.edit().putBoolean("auto_guard_location_enabled", enabled).apply()
+								}
+							)
+						}
+					)
+				}
+			}
+		}
 		PrivacifyExpressiveCard {
 			SettingsRow(
 				title = "App Autostart",
