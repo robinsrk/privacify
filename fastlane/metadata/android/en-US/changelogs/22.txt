@@ -1,0 +1,5 @@
+• New purple Material You theme with Plus Jakarta Sans font
+• Per-sensor Auto Guard toggles — enable or disable microphone, camera, and location individually
+• 8-layer location kill switch with automatic verification and retries
+• Fix crash on Android 10 when splash screen icon size attribute missing in theme
+• Shapes aligned to Material 3 specification
