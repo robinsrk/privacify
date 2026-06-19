@@ -72,6 +72,12 @@ android {
 	}
 }
 
+tasks.register("assembleProDebug") {
+	dependsOn("assembleDebug")
+	description = "Assembles a debug build with Pro features (root/Shizuku hardware controls)"
+	group = "build"
+}
+
 tasks.register("assembleProRelease") {
 	dependsOn("assembleRelease")
 	description = "Assembles a release build with Pro features (root/Shizuku hardware controls)"
