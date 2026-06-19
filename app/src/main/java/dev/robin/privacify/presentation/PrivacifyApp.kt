@@ -52,6 +52,7 @@ import dev.robin.privacify.presentation.apps.AppsScreen
 import dev.robin.privacify.presentation.home.HomeScreen
 import dev.robin.privacify.presentation.lockdown.LockdownScreen
 import dev.robin.privacify.presentation.navigation.BottomNavDestination
+import dev.robin.privacify.presentation.sensorlog.SensorLogScreen
 import dev.robin.privacify.presentation.onboarding.OnboardingRoute
 import dev.robin.privacify.presentation.settings.HostsEditorScreen
 import dev.robin.privacify.presentation.settings.SettingsScreen
@@ -124,7 +125,9 @@ fun PrivacifyApp() {
 					AppsScreen()
 				}
 				composable(BottomNavDestination.AnalyticsDestination.route) {
-					AnalyticsScreen()
+					AnalyticsScreen(
+						onNavigateToHistory = { navController.navigate("sensor_history") }
+					)
 				}
 				composable(BottomNavDestination.SettingsDestination.route) {
 					SettingsScreen()
@@ -143,6 +146,11 @@ fun PrivacifyApp() {
 				}
 				composable("hosts_editor") {
 					HostsEditorScreen(
+						onBack = { navController.popBackStack() }
+					)
+				}
+				composable("sensor_history") {
+					SensorLogScreen(
 						onBack = { navController.popBackStack() }
 					)
 				}
