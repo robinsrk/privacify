@@ -2,10 +2,13 @@ Categories:
   - System
   - Security
 License: Apache-2.0
-AuthorName: Robin
+AuthorName: Abul Kalam Robin
+AuthorWebsite: www.robinthe.dev
+Website: www.robinthe.dev/privacify
 SourceCode: https://github.com/robinsrk/privacify
 IssueTracker: https://github.com/robinsrk/privacify/issues
 Changelog: https://github.com/robinsrk/privacify/releases
+ArchivePolicy: 1
 
 AutoName: Privacify
 Description: |-
@@ -21,9 +24,9 @@ Description: |-
   - Lockdown Mode for instant system-wide sensor deactivation
 
   Advanced features (requires Root or Shizuku):
-  - Hardware Kill Switches to disable microphone and camera at the system level
+  - Hardware Kill Switches to disable microphone, camera, and location at the system level
   - AppOps Permission Management for granular control per app
-  - Auto-Guard that automatically pauses kill switches when sensors are in use
+  - Auto-Guard that monitors sensor usage and temporarily pauses kill switches when sensors are in use — with per-sensor selection for mic, camera, and location
 
   No ads. No tracking. No network access required. All data stays on your device.
 
@@ -44,6 +47,66 @@ Builds:
   - versionName: 1.1
     versionCode: 2
     commit: main
+    subdir: .
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
+  - versionName: 1.2
+    versionCode: 3
+    commit: v1.2
+    subdir: .
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
+  - versionName: 1.3
+    versionCode: 4
+    commit: v1.3
+    subdir: .
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
+  - versionName: 1.4
+    versionCode: 5
+    commit: v1.4
+    subdir: .
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
+  - versionName: 1.5
+    versionCode: 8
+    commit: v1.5
+    subdir: .
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
+  - versionName: 1.6
+    versionCode: 9
+    commit: v1.6
+    subdir: .
+    gradle:
+      - yes
+    output: app/build/outputs/apk/release/app-release-unsigned.apk
+    scanignore:
+      - AndroidManifest.xml
+
+  - versionName: 2.1
+    versionCode: 21
+    commit: v2.1
     subdir: .
     gradle:
       - yes
