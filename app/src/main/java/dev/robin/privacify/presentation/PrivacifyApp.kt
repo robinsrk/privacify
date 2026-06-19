@@ -52,8 +52,9 @@ import dev.robin.privacify.presentation.apps.AppsScreen
 import dev.robin.privacify.presentation.home.HomeScreen
 import dev.robin.privacify.presentation.lockdown.LockdownScreen
 import dev.robin.privacify.presentation.navigation.BottomNavDestination
-import dev.robin.privacify.presentation.sensorlog.SensorLogScreen
 import dev.robin.privacify.presentation.onboarding.OnboardingRoute
+import dev.robin.privacify.presentation.sensorlog.SensorLogScreen
+import dev.robin.privacify.presentation.settings.ExemptionsScreen
 import dev.robin.privacify.presentation.settings.HostsEditorScreen
 import dev.robin.privacify.presentation.settings.SettingsScreen
 import kotlinx.coroutines.flow.first
@@ -130,7 +131,9 @@ fun PrivacifyApp() {
 					)
 				}
 				composable(BottomNavDestination.SettingsDestination.route) {
-					SettingsScreen()
+					SettingsScreen(
+						onNavigateToExemptions = { navController.navigate("exemptions") }
+					)
 				}
 				composable("onboarding") {
 					OnboardingRoute(
@@ -151,6 +154,11 @@ fun PrivacifyApp() {
 				}
 				composable("sensor_history") {
 					SensorLogScreen(
+						onBack = { navController.popBackStack() }
+					)
+				}
+				composable("exemptions") {
+					ExemptionsScreen(
 						onBack = { navController.popBackStack() }
 					)
 				}

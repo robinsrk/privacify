@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdminPanelSettings
+import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.Videocam
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -55,6 +57,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import android.content.Context
+import android.content.Intent
 import dev.robin.privacify.core.provider.ProFeature
 import dev.robin.privacify.ui.components.PrivacifyAutoGuardCard
 import dev.robin.privacify.ui.components.PrivacifyBadge
@@ -74,7 +77,7 @@ import dev.robin.privacify.ui.theme.PurpleVibrant
 import dev.robin.privacify.ui.theme.RedVibrant
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onNavigateToExemptions: () -> Unit = {}) {
 	val context = LocalContext.current
 	val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.factory(context))
 	val state by viewModel.state.collectAsState()
@@ -114,7 +117,8 @@ fun SettingsScreen() {
 			enabled = state.automationEnabled,
 			onToggle = viewModel::onAutomationChanged,
 			autostartEnabled = state.autostartEnabled,
-			onAutostartToggle = viewModel::onAutostartChanged
+			onAutostartToggle = viewModel::onAutostartChanged,
+			onNavigateToExemptions = onNavigateToExemptions
 		)
 
 			GeneralSection(
@@ -143,7 +147,8 @@ private fun ProtectionSection(
 	enabled: Boolean,
 	onToggle: (Boolean) -> Unit,
 	autostartEnabled: Boolean,
-	onAutostartToggle: (Boolean) -> Unit
+	onAutostartToggle: (Boolean) -> Unit,
+	onNavigateToExemptions: () -> Unit
 ) {
 	var showAutostartProDialog by remember { mutableStateOf(false) }
 	val isPro = ProFeature.isAutoGuardAvailable()
@@ -228,6 +233,24 @@ private fun ProtectionSection(
 						}
 					)
 				}
+			}
+			PrivacifyExpressiveCard {
+				SettingsRow(
+					title = "Exempted Apps",
+					subtitle = "Apps that bypass Auto Guard sensor blocking",
+					icon = Icons.Outlined.Shield,
+					iconTint = MaterialTheme.colorScheme.tertiary,
+					iconBackground = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f),
+					onClick = onNavigateToExemptions,
+					trailing = {
+						Icon(
+							Icons.Outlined.Shield,
+							contentDescription = null,
+							tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+							modifier = Modifier.size(20.dp)
+						)
+					}
+				)
 			}
 		}
 		PrivacifyExpressiveCard {
@@ -519,6 +542,7 @@ private fun AdvancedSection(
 private fun AboutSection() {
 	val context = LocalContext.current
 	val uriHandler = LocalUriHandler.current
+	var showUpdateProDialog by remember { mutableStateOf(false) }
 	val versionName = remember {
 		try {
 			context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
@@ -543,6 +567,28 @@ private fun AboutSection() {
 				)
 				PrivacifyDivider(modifier = Modifier.padding(start = 56.dp))
 				SettingsRow(
+					title = "Check for Updates",
+					subtitle = "Check for new version on Patreon",
+					icon = Icons.Outlined.CloudDownload,
+					iconTint = MaterialTheme.colorScheme.primary,
+					iconBackground = MaterialTheme.colorScheme.primaryContainer,
+					onClick = {
+						if (ProFeature.isAutoGuardAvailable()) {
+							try {
+								val intent = Intent().apply {
+									setClassName(context, "dev.robin.privacify.pro.update.UpdateActivity")
+									putExtra("manual_check", true)
+									addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+								}
+								context.startActivity(intent)
+							} catch (_: Exception) {}
+						} else {
+							showUpdateProDialog = true
+						}
+					}
+				)
+				PrivacifyDivider(modifier = Modifier.padding(start = 56.dp))
+				SettingsRow(
 					title = "Version",
 					subtitle = versionName,
 					icon = Icons.Outlined.Info,
@@ -551,6 +597,14 @@ private fun AboutSection() {
 				)
 			}
 		}
+	}
+
+	if (showUpdateProDialog) {
+		PrivacifyProDialog(
+			featureName = "Automatic Update Check",
+			description = "Get the latest Privacify Pro version directly from Patreon with one tap.",
+			onDismiss = { showUpdateProDialog = false }
+		)
 	}
 }
 
