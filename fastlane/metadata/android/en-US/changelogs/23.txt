@@ -1,0 +1,4 @@
+- Sensor usage history logs — view camera, mic, and location access history with timeline UI (Pro feature)
+- Auto Guard excluded apps — choose which apps bypass Auto Guard per sensor type (Pro feature)
+- Manual update checker in Settings > About
+- Fix Auto Guard camera state not syncing correctly when manually toggled
